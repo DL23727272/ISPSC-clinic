@@ -1,0 +1,96 @@
+
+:root {
+  --maroon-800: #800000;
+  --gold-500: #ffd700;
+}
+
+body {
+  font-family: Arial, sans-serif;
+}
+#menu {
+  filter: invert(1);
+}
+
+/* * {
+  border: 1px solid red;
+} */
+
+.ispsc-logo {
+  font-family: "Cinzel", serif;
+  color: var(--gold-500);
+  font-size: 18px;
+}
+
+.ispsc-logo span {
+  font-size: 1.2em; /* Adjust size as needed */
+}
+.header {
+  background-color: var(--maroon-800);
+  padding: 20px;
+}
+
+.navbar {
+  background-color: var(--maroon-800);
+}
+
+.navbar-nav .nav-link {
+  color: white;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--gold-500);
+}
+
+.btn-outline-light:hover {
+  background-color: var(--gold-500);
+  color: var(--maroon-800);
+}
+
+.navbar-nav .nav-link:active {
+  color: var(--gold-500);
+}
+
+.page-header {
+  background-color: var(--maroon-800);
+  color: white;
+  padding: 2rem 0;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-family: "Cinzel", serif;
+}
+
+.bagong-pilipinas {
+  filter: drop-shadow(0 0 0.75rem white);
+}
+
+.grayscale-img {
+  filter: grayscale(100%) drop-shadow(5px 5px 10px rgba(0, 0, 0, 0.3));
+  transition: filter 0.5s ease-in-out;
+}
+
+.grayscale-img:hover {
+  filter: grayscale(0%) drop-shadow(5px 5px 10px rgba(128, 0, 0, 0.7)); /* Maroon shadow */
+}
+/* Striped rows */
+.striped-row:nth-child(even) {
+    background-color: #f8f9fa; /* light gray */
+}
+.striped-row:nth-child(odd) {
+    background-color: #ffffff; /* white */
+}
+.section-header {
+    background-color: #cce5ff;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+.sub-header {
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #0056b3;
+}
