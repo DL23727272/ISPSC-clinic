@@ -33,37 +33,37 @@
             border: 1px solid black;
         } */
             /* Striped rows */
-.striped-row:nth-child(even) {
-    background-color: #f8f9fa; /* light gray */
-}
-.striped-row:nth-child(odd) {
-    background-color: #ffffff; /* white */
-}
+        .striped-row:nth-child(even) {
+            background-color: #f8f9fa; /* light gray */
+        }
+        .striped-row:nth-child(odd) {
+            background-color: #ffffff; /* white */
+        }
 
-/* Section Headers */
-.section-header {
-    background-color: #cce5ff;
-    padding: 8px 12px;
-    border-radius: 5px;
-    font-weight: bold;
-    margin-top: 20px;
-    margin-bottom: 10px;
-}
+        /* Section Headers */
+        .section-header {
+            background-color: #cce5ff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
 
-/* Sub-Headers */
-.sub-header {
-    font-weight: bold;
-    margin-top: 15px;
-    margin-bottom: 5px;
-    color: #0056b3;
-}
+        /* Sub-Headers */
+        .sub-header {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #0056b3;
+        }
 
-/* Instructions */
-.instructions {
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    color: #555;
-}
+        /* Instructions */
+        .instructions {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            color: #555;
+        }
     </style>
   </head>
   <body>
