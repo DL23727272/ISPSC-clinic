@@ -102,9 +102,77 @@
         </div>
       </div>
     </header>
+    
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <i class="navbar-toggler-icon" id="menu"></i>
+        </button>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                style="color: yellow"
+                aria-current="page"
+                href="index.php"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a  class="nav-link "
+                aria-current="page" href="student_edit.php">Edit Health Info</a>
+            </li>
+             <li class="nav-item">
+              <a
+                class="nav-link"
+                href="index.php"
+                ><i class="fa-solid fa-power-off"></i> Logout</a
+              >
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="test2.php">Instruction</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="research.php">Research</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="extension.php">Extension</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="internationalization.php"
+                >Internationalization</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="psychometrician-reviewer.php"
+                >Psychometrician Reviewer</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="alumni.php">Alumni</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="others.php">Others</a>
+            </li> -->
+          </ul>
+          
+        </div>
+      </div>
+    </nav>
 
 
   <div class="container my-5">
+    
     <h2 class="mb-4 text-center fw-bold">Student Health Information Form</h2>
 
         <div class="mb-3 p-3 rounded" style="background-color: #d1ecf1;">
@@ -541,6 +609,13 @@
     submitButton.disabled = true;
     </script>
     <script src="assets/js/student_medical.js"></script>
+    <script>
+        // Example: get student_id from sessionStorage
+        let student_id = sessionStorage.getItem("student_id");
+        console.log("Student ID from sessionStorage:", student_id);
+
+        
+    </script>
    
 
   </body>

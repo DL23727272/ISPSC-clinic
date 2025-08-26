@@ -2,29 +2,39 @@
 session_start();
 require_once 'db_connection.php';
 
-$error = '';
-$success = '';
-
-if(!isset($_GET['id']) || empty($_GET['id'])) {
-    die('No record specified.');
+if (!isset($_GET['student_id']) || empty($_GET['student_id'])) {
+    ?>
+    <script>
+        const sid = sessionStorage.getItem("student_id");
+        if (sid) {
+            window.location.href = window.location.pathname + "?student_id=" + encodeURIComponent(sid);
+        } else {
+            document.body.innerHTML = "No student_id found in session storage.";
+        }
+    </script>
+    <?php
+    exit;
 }
 
-$id = intval($_GET['id']);
+$student_id = $conn->real_escape_string($_GET['student_id']);
 
 // Fetch record
-$sql = "SELECT shi.*, s.student_id, s.first_name, s.last_name, s.campus 
+$sql = "SELECT shi.*, s.student_id, s.first_name, s.last_name, s.campus, shi.created_at
         FROM student_health_info shi
         JOIN students s ON shi.student_id = s.student_id
-        WHERE shi.id = $id";
+        WHERE shi.student_id = '$student_id'";
 
 $result = $conn->query($sql);
+if(!$result){
+    die("Query error: " . $conn->error);
+}
 if($result->num_rows == 0) {
-    die('Record not found.');
+    die("Record not found for student_id: " . htmlspecialchars($student_id));
 }
 
 $record = $result->fetch_assoc();
 
-// Prepare checkbox fields
+// Checkbox fields
 $checkboxes = [
     'chicken_pox','hypertension','thyroid_disease','mumps','diabetes','heart_disease',
     'measles','asthma','blood_transfusion','tuberculosis','peptic_ulcer','cancer',
@@ -37,7 +47,7 @@ foreach($checkboxes as $field) {
     $checkbox_values[$field] = !empty($record[$field]) && $record[$field]==1 ? true : false;
 }
 
-// All other input fields
+// Other input fields
 $fields = [
     'blood_type','allergy_alert','disability','cancer_type','hepatitis_type',
     'hospitalization_date','hospitalization_diagnosis','hospitalization_hospital',
@@ -50,7 +60,6 @@ $fields = [
     'lmp','menarche','duration','amount','menstrual_interval','symptoms','gyne_pathology',
     'last_dental_visit','dental_procedure','fam_cancer_form','fam_asthma_form','fam_others'
 ];
-
 
 foreach($fields as $field) {
     $$field = isset($record[$field]) ? $record[$field] : '';
@@ -70,49 +79,60 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         $update_values[] = "$field=$val";
     }
 
-    $update_sql = "UPDATE student_health_info SET ".implode(',', $update_values)." WHERE id=$id";
+    $health_id = $record['id']; // assuming primary key column is id
+
+    $update_sql = "UPDATE student_health_info 
+                SET ".implode(',', $update_values)." 
+                WHERE id='$health_id'";
 
     if ($conn->query($update_sql)) {
-        $_SESSION['swal'] = [
-            'icon' => 'success',
-            'title' => 'Success',
-            'text' => 'Record updated successfully!'
-        ];
-        header("Location: edit_health_info.php?id=$id");
+        $_SESSION['swal'] = ['icon'=>'success','title'=>'Success','text'=>'Record updated successfully!'];
+        header("Location: student_edit.php");
         exit;
     } else {
-        $_SESSION['swal'] = [
-            'icon' => 'error',
-            'title' => 'Error',
-            'text' => 'Error updating record: '.$conn->error
-        ];
-        header("Location: edit_health_info.php?id=$id");
+        $_SESSION['swal'] = ['icon'=>'error','title'=>'Error','text'=>'Error updating record: '.$conn->error];
+        header("Location: student_edit.php?student_id=$student_id");
         exit;
     }
-
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard | ISPSC CLINICA</title>
-        <link
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4/dist/sweetalert2.all.min.js
+    "></script>
+    <link href="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4/dist/sweetalert2.min.css
+    " rel="stylesheet">
+    <link href="styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="img/logo.ico" />
     <style>
-         .striped-row:nth-child(even) {
+        /* *{
+            border-radius: 5px;
+            border: 1px solid black;
+        } */
+            /* Striped rows */
+        .striped-row:nth-child(even) {
             background-color: #f8f9fa; /* light gray */
         }
         .striped-row:nth-child(odd) {
@@ -143,96 +163,115 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 15px;
             color: #555;
         }
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --employee-color: #27ae60;
-            --admin-color: #e74c3c;
-            --warning-color: #f39c12;
-            --purple-color: #9b59b6;
-            --light-gray: #ecf0f1;
-            --dark-gray: #7f8c8d;
-            --white: #ffffff;
-            --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            --sidebar-width: 280px;
-        }
-        * {margin:0;padding:0;box-sizing:border-box;}
-        body {font-family:'Roboto',sans-serif;background-color:var(--light-gray);color:var(--primary-color);}
-        .dashboard-container {display:flex;min-height:100vh;}
-        .header {position:fixed;top:0;left:0;right:0;height:70px;background:var(--white);border-bottom:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;z-index:1000;box-shadow:var(--box-shadow);}
-        .header-left {display:flex;align-items:center;gap:1rem;}
-        .logo {display:flex;align-items:center;gap:0.5rem;font-size:1.25rem;font-weight:700;color:var(--secondary-color);}
-        .logo i {font-size:1.5rem;}
-        .header-title {font-size:1.1rem;color:var(--dark-gray);font-weight:400;}
-        .header-right {display:flex;align-items:center;gap:1rem;}
-        .user-info {display:flex;align-items:center;gap:0.5rem;color:var(--dark-gray);font-size:0.95rem;cursor:pointer;padding:0.5rem 0.75rem;border-radius:6px;transition:all 0.3s ease;border:none;background:transparent;font-family:'Roboto',sans-serif;}
-        .user-info:hover {background-color:var(--light-gray);color:var(--primary-color);}
-        .logout-btn {color:var(--dark-gray);font-size:1.1rem;cursor:pointer;transition:color 0.3s ease;}
-        .logout-btn:hover {color:var(--admin-color);}
-        .logout-message {position:fixed;top:90px;right:2rem;background:#27ae60;color:#fff;padding:1rem 1.5rem;border-radius:8px;box-shadow:var(--box-shadow);font-size:0.95rem;font-weight:500;display:none;z-index:1001;animation:slideIn 0.3s ease;}
-        .logout-message.show {display:flex;align-items:center;gap:0.5rem;}
-        @keyframes slideIn {from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
-        .sidebar {width:var(--sidebar-width);background:var(--white);border-right:1px solid #e0e0e0;padding-top:70px;position:fixed;height:100vh;overflow-y:auto;}
-        .sidebar-menu {padding:2rem 0;}
-        .menu-item {display:flex;align-items:center;gap:1rem;padding:1rem 2rem;color:var(--dark-gray);text-decoration:none;font-size:0.95rem;font-weight:500;transition:all 0.3s ease;border-left:3px solid transparent;}
-        .menu-item:hover {background-color:var(--light-gray);color:var(--primary-color);}
-        .menu-item.active {background-color:var(--secondary-color);color:#fff;border-left-color:var(--secondary-color);}
-        .menu-item i {font-size:1.1rem;width:20px;}
-        .main-content {flex:1;margin-left:var(--sidebar-width);padding-top:70px;padding:70px 2rem 2rem 2rem;}
-        .info-cards {display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;}
-        .info-card {background:#fff;border-radius:12px;padding:1.5rem;box-shadow:var(--box-shadow);display:flex;align-items:center;gap:1rem;}
-        .card-icon {width:50px;height:50px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#fff;}
-        .card-icon.blue {background-color:var(--secondary-color);}
-        .card-icon.green {background-color:var(--employee-color);}
-        .card-icon.yellow {background-color:var(--warning-color);}
-        .card-icon.purple {background-color:var(--purple-color);}
-        .card-icon.red {background-color:var(--admin-color);}
-        .card-icon.campus {background-color:#16a085;}
-        .card-content h3 {font-size:0.9rem;color:var(--dark-gray);font-weight:500;margin-bottom:0.25rem;}
-        .card-content .count {font-size:2rem;font-weight:700;color:var(--primary-color);}
-        @media(max-width:768px){.sidebar{transform:translateX(-100%);transition:transform 0.3s ease;}.main-content{margin-left:0;padding:70px 1rem 2rem 1rem;}.header{padding:0 1rem;}.info-cards{grid-template-columns:1fr;}.user-info span{display:none;}.logout-message{right:1rem;left:1rem;}}
     </style>
-</head>
-<body>
+  </head>
+  <body>
 
-<div class="dashboard-container">
+
     <header class="header">
-        <div class="header-left">
-            <div class="logo"><i class="fas fa-chart-bar"></i><span>ISPSC CLINICA</span></div>
-            <span class="header-title">Admin Dashboard</span>
+      <div class="container">
+        <div
+          class="d-flex flex-column align-items-center justify-content-center text-center"
+        >
+          <div>
+            <img
+              src="img/ispsc.png"
+              alt="ISPSC Logo"
+              width="100"
+              height="100"
+              class="me-3"
+            />
+            <img
+              class="bagong-pilipinas"
+              src="img/bagong-pilipinas.png"
+              alt="ISPSC Logo"
+              width="120"
+              height="120"
+              class="me-3"
+            />
+          </div>
+          <div>
+            <h1 class="ispsc-logo mb-0">REPUBLIC OF THE PHILIPPINES</h1>
+            <hr class="my-2 border-white" />
+            <h1 class="ispsc-logo mb-0">
+              ILOCOS SUR POLYTECHNIC STATE COLLEGE
+            </h1>
+            <h2 class="ispsc-logo mb-0">ILOCOS SUR, PHILIPPINES</h2>
+          </div>
         </div>
-        <div class="header-right">
-            <button class="user-info" id="user-info-btn"><span>Admin User</span></button>
-            <i class="fas fa-sign-out-alt logout-btn" id="logout-icon"></i>
-        </div>
+      </div>
     </header>
-
-    <div class="logout-message" id="logout-message"><i class="fas fa-check-circle"></i><span>Successfully logged out! Redirecting...</span></div>
-
-  <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
-    <nav class="sidebar">
-        <div class="sidebar-menu">
-            <a href="dashboard.php" class="menu-item <?= ($currentPage == 'dashboard.php') ? 'active' : '' ?>">
-                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-            </a>
-            <a href="patients.php" class="menu-item <?= ($currentPage == 'patients.php') ? 'active' : '' ?>">
-                <i class="fas fa-users"></i><span>Patient Informations</span>
-            </a>
-            <a href="health_records.php" class="menu-item <?= ($currentPage == 'health_records.php') ? 'active' : '' ?>">
-                <i class="fas fa-clipboard-list"></i><span>Health Informations</span>
-            </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
-                <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>
-            </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'settings.php') ? 'active' : '' ?>">
-                <i class="fas fa-cog"></i><span>Settings</span>
-            </a>
+    
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <i class="navbar-toggler-icon" id="menu"></i>
+        </button>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                aria-current="page"
+                href="student_medical.php"
+                >Home</a
+              >
+            </li>
+            <li class="nav-item">
+              <a  class="nav-link active"
+                style="color: yellow"
+                aria-current="page" href="student_edit.php">Edit Health Info</a>
+            </li>
+             <li class="nav-item">
+              <a
+                class="nav-link"
+                href="index.php"
+                ><i class="fa-solid fa-power-off"></i> Logout</a
+              >
+            </li>
+            <!-- <li class="nav-item">
+              <a class="nav-link" href="instruction.php">Instruction</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="research.php">Research</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="extension.php">Extension</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="internationalization.php"
+                >Internationalization</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="psychometrician-reviewer.php"
+                >Psychometrician Reviewer</a
+              >
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="alumni.php">Alumni</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="others.php">Others</a>
+            </li> -->
+          </ul>
+          
         </div>
+      </div>
     </nav>
 
-    <main class="main-content mt-5">
+
     <div class="container my-5">
-    <h2 class="mb-4 text-center fw-bold">Edit Student Health Information Record</h2>
+    <h2 class="mb-4 text-center fw-bold">Edit your Health Information Form</h2>
 
         <div class="mb-3 p-3 rounded" style="background-color: #d1ecf1;">
             <p class="small mt-2 mb-0">
@@ -244,6 +283,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="container my-4">
 
 
+
+
+    
             <form id="medicalForm" method="POST">
 
                     <!-- Basic Info -->
@@ -624,13 +666,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
             </form>
-
-
-
-
         </div>
-    </main>
-</div>
+
+
+    </div>
 
     <?php if (isset($_SESSION['swal'])): ?>
     <script>
@@ -640,14 +679,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     text: '<?= $_SESSION['swal']['text'] ?>'
     }).then(()=>{
         <?php if($_SESSION['swal']['icon'] === 'success'): ?>
-            window.location = 'health_records.php';
+            window.location.href = "student_edit.php?student_id=" + studentId;
         <?php endif; ?>
     });
     </script>
     <?php unset($_SESSION['swal']); endif; ?>
 
 
-<script>
+    <?php include "footer.php"?>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
     const consentCheckbox = document.getElementById('consentCheckbox');
     const submitButton = document.querySelector('form button[type="submit"]');
 
@@ -658,26 +701,16 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Initialize submit button as disabled
     submitButton.disabled = true;
     </script>
-    <script src="assets/js/student_medical.js"></script>
-
-<script>
-document.querySelectorAll('.menu-item').forEach(item => {
-    item.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-        this.classList.add('active');
-        window.location.href = this.href; // navigate manually
-    });
-});
 
 
-function handleLogout() {
-    const logoutMessage = document.getElementById('logout-message');
-    logoutMessage.classList.add('show');
-    setTimeout(() => { window.location.href = 'admin_login.php'; }, 2000);
-}
-document.getElementById('user-info-btn').addEventListener('click', handleLogout);
-document.getElementById('logout-icon').addEventListener('click', handleLogout);
-</script>
-</body>
+     <script>
+        const studentId = sessionStorage.getItem("student_id");
+        if (studentId && !window.location.search.includes("student_id")) {
+            window.location.href = "student_edit.php?student_id=" + studentId;
+        }
+    </script>
+
+   
+
+  </body>
 </html>
