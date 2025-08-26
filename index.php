@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ISPSC CLINICA | Medical Records Management</title>
+    <link rel="icon" type="image/x-icon" href="img/logo.ico" />
 
 
 
@@ -97,7 +98,7 @@
                 </div>
                 <h3>Student Access</h3>
                 <p>Scan to Register or Log In for medical form</p>
-                <button id="scan-qr-btn" class="btn btn-primary">
+                <button id="scan-qr-btn" class="btn btn-primary m-2">
                     <i class="fas fa-qrcode"></i> Scan QR Code
                 </button>
                 <div id="qr-scanner" class="qr-scanner hidden">
@@ -106,7 +107,7 @@
                     <button id="cancel-scan" class="btn btn-secondary">Cancel</button>
                 </div>
                 
-                <a href="student_login.php" class="btn btn-primary">
+                <a href="student_login.php" class="btn btn-primary m">
                     <i class="fas fa-sign-in-alt"></i> Student Login
                 </a>
             </div>
