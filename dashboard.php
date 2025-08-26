@@ -130,10 +130,10 @@ if ($row = $result->fetch_row()) $today_visits = $row[0];
                 <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
             </a>
             <a href="patients.php" class="menu-item <?= ($currentPage == 'patients.php') ? 'active' : '' ?>">
-                <i class="fas fa-users"></i><span>Patient Records</span>
+                <i class="fas fa-users"></i><span>Patient Informations</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'medical_forms.php') ? 'active' : '' ?>">
-                <i class="fas fa-clipboard-list"></i><span>Medical Forms</span>
+            <a href="health_records.php" class="menu-item <?= ($currentPage == 'health_records.php') ? 'active' : '' ?>">
+                <i class="fas fa-clipboard-list"></i><span>Health Informations</span>
             </a>
             <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
                 <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>

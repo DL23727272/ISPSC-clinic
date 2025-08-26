@@ -218,10 +218,10 @@ $result = $conn->query($sql);
                 <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
             </a>
             <a href="patients.php" class="menu-item <?= ($currentPage == 'patients.php') ? 'active' : '' ?>">
-                <i class="fas fa-users"></i><span>Patient Records</span>
+                <i class="fas fa-users"></i><span>Patient Informations</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'medical_forms.php') ? 'active' : '' ?>">
-                <i class="fas fa-clipboard-list"></i><span>Medical Forms</span>
+            <a href="health_records.php" class="menu-item <?= ($currentPage == 'health_records.php') ? 'active' : '' ?>">
+                <i class="fas fa-clipboard-list"></i><span>Health Informations</span>
             </a>
             <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
                 <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>
@@ -254,10 +254,6 @@ $result = $conn->query($sql);
                     <th>Student ID</th>
                     <th>Name</th>
                     <th>Campus</th>
-                    <th>Department</th>
-                    <th>Course</th>
-                    <th>Year</th>
-                    <th>Semester</th>
                     <th>Sex</th>
                     <th>Address</th>
                     <th>Phone</th>
@@ -274,10 +270,6 @@ $result = $conn->query($sql);
                         <td><?php echo htmlspecialchars($row['student_id']); ?></td>
                         <td><?php echo htmlspecialchars($row['last_name'].', '.$row['first_name'].' '.$row['middle_name']); ?></td>
                         <td><?php echo htmlspecialchars($row['campus']); ?></td>
-                        <td><?php echo htmlspecialchars($row['department']); ?></td>
-                        <td><?php echo htmlspecialchars($row['course']); ?></td>
-                        <td><?php echo htmlspecialchars($row['year']); ?></td>
-                        <td><?php echo htmlspecialchars($row['semester']); ?></td>
                         <td><?php echo htmlspecialchars($row['sex']); ?></td>
                         <td><?php echo htmlspecialchars($row['permanent_address']); ?></td>
                         <td><?php echo htmlspecialchars($row['phone_number']); ?></td>

@@ -1,44 +1,32 @@
 <?php
-session_start();
 require_once 'db_connection.php';
 
-$error = '';
-$success = '';
-$active_tab = isset($_GET['tab']) && $_GET['tab'] === 'register' ? 'register' : 'login';
+// Handle search and campus filter
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$campus = isset($_GET['campus']) ? $_GET['campus'] : '';
 
-// Initialize counts
-$total_students = 0;
-$today_visits = 0;
-$total_health_info = 0;
-$total_users = 0;
-$this_month_students = 0;
-$campus_counts = [];
+// Build SQL query with optional search and campus filter
+$sql = "SELECT shi.id, shi.student_id, shi.created_at, s.first_name, s.last_name, s.campus
+        FROM student_health_info shi
+        LEFT JOIN students s ON shi.student_id = s.student_id
+        WHERE 1";
 
-// Total students
-$result = $conn->query("SELECT COUNT(*) FROM students");
-if ($row = $result->fetch_row()) $total_students = $row[0];
-
-// Students per campus
-$result = $conn->query("SELECT campus, COUNT(*) AS count FROM students GROUP BY campus");
-while ($row = $result->fetch_assoc()) {
-    $campus_counts[$row['campus']] = $row['count'];
+if(!empty($search)) {
+    $search = $conn->real_escape_string($search);
+    $sql .= " AND (s.student_id LIKE '%$search%' OR s.first_name LIKE '%$search%' OR s.last_name LIKE '%$search%')";
 }
 
-// Total student health info entries
-$result = $conn->query("SELECT COUNT(*) FROM student_health_info");
-if ($row = $result->fetch_row()) $total_health_info = $row[0];
+if(!empty($campus)) {
+    $campus = $conn->real_escape_string($campus);
+    $sql .= " AND s.campus = '$campus'";
+}
 
-// Total users
-$result = $conn->query("SELECT COUNT(*) FROM users");
-if ($row = $result->fetch_row()) $total_users = $row[0];
+$sql .= " ORDER BY s.campus ASC, shi.id DESC";
 
-// Students added this month
-$result = $conn->query("SELECT COUNT(*) FROM students WHERE MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())");
-if ($row = $result->fetch_row()) $this_month_students = $row[0];
+$result = $conn->query($sql);
 
-// Today's visits
-$result = $conn->query("SELECT COUNT(*) FROM student_health_info WHERE DATE(created_at) = CURRENT_DATE()");
-if ($row = $result->fetch_row()) $today_visits = $row[0];
+// Fetch distinct campuses for the dropdown
+$campus_result = $conn->query("SELECT DISTINCT campus FROM students ORDER BY campus ASC");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -58,6 +46,39 @@ if ($row = $result->fetch_row()) $today_visits = $row[0];
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            background: #fff;
+            border: 1px solid #ccc; /* outer border */
+        }
+        table thead {
+            background: var(--secondary-color);
+            color: #fff;
+        }
+        table th, table td {
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd; /* horizontal grid lines */
+            border-right: 1px solid #ddd;  /* vertical grid lines */
+        }
+        table th:last-child, table td:last-child {
+            border-right: none; /* remove right border on last column */
+        }
+        table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        table tbody tr:hover {
+            background: #e8f0fe;
+        }
+        table th:first-child, table td:first-child {
+            border-left: 1px solid #ddd; /* left border for first column */
+        }
         :root {
             --primary-color: #2c3e50;
             --secondary-color: #3498db;
@@ -123,17 +144,17 @@ if ($row = $result->fetch_row()) $today_visits = $row[0];
 
     <div class="logout-message" id="logout-message"><i class="fas fa-check-circle"></i><span>Successfully logged out! Redirecting...</span></div>
 
-    <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
+   <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
     <nav class="sidebar">
         <div class="sidebar-menu">
             <a href="dashboard.php" class="menu-item <?= ($currentPage == 'dashboard.php') ? 'active' : '' ?>">
                 <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
             </a>
             <a href="patients.php" class="menu-item <?= ($currentPage == 'patients.php') ? 'active' : '' ?>">
-                <i class="fas fa-users"></i><span>Patient Records</span>
+                <i class="fas fa-users"></i><span>Patient Informations</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'medical_forms.php') ? 'active' : '' ?>">
-                <i class="fas fa-clipboard-list"></i><span>Medical Forms</span>
+            <a href="health_records.php" class="menu-item <?= ($currentPage == 'health_records.php') ? 'active' : '' ?>">
+                <i class="fas fa-clipboard-list"></i><span>Health Informations</span>
             </a>
             <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
                 <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>
@@ -145,7 +166,59 @@ if ($row = $result->fetch_row()) $today_visits = $row[0];
     </nav>
 
     <main class="main-content mt-5">
-    
+    <div class="container mt-5">
+        <h2 class="mb-4">Student Health Information Records</h2>
+
+        <form class="row g-3 mb-3" method="get">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search by ID or Name" value="<?= htmlspecialchars($search) ?>">
+            </div>
+            <div class="col-md-4">
+                <select name="campus" class="form-select">
+                    <option value="">All Campuses</option>
+                    <?php while($c = $campus_result->fetch_assoc()): ?>
+                        <option value="<?= htmlspecialchars($c['campus']) ?>" <?= $campus == $c['campus'] ? 'selected' : '' ?>><?= htmlspecialchars($c['campus']) ?></option>
+                    <?php endwhile; ?>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="health_records.php" class="btn btn-secondary">Reset</a>
+            </div>
+        </form>
+
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Campus</th>
+                    <th>Date Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if($result->num_rows > 0): $i = 1; ?>
+                    <?php while($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($row['student_id']) ?></td>
+                            <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
+                            <td><?= htmlspecialchars($row['campus']) ?></td>
+                            <td><?= htmlspecialchars($row['created_at']) ?></td>
+                            <td>
+                                <a href="edit_health_info.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-primary">Edit</a>
+                                <a href="delete_health.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
+                            </td>
+                        </tr>
+                    <?php endwhile; ?>
+                <?php else: ?>
+                    <tr>
+                        <td colspan="6" class="text-center">No records found.</td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
     </main>
 </div>
 
