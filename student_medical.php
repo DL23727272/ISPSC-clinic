@@ -132,6 +132,10 @@
               <a  class="nav-link "
                 aria-current="page" href="student_edit.php">Edit Health Info</a>
             </li>
+            <li class="nav-item">
+              <a  class="nav-link "
+                aria-current="page" href="student_info.php">Edit Personal Info</a>
+            </li>
              <li class="nav-item">
               <a
                 class="nav-link"
