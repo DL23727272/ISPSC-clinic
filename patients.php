@@ -211,13 +211,24 @@ $result = $conn->query($sql);
 
     <div class="logout-message" id="logout-message"><i class="fas fa-check-circle"></i><span>Successfully logged out! Redirecting...</span></div>
 
+    <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
     <nav class="sidebar">
         <div class="sidebar-menu">
-            <a href="#" class="menu-item "><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
-            <a href="#" class="menu-item active"><i class="fas fa-users"></i><span>Patient Records</span></a>
-            <a href="#" class="menu-item"><i class="fas fa-clipboard-list"></i><span>Medical Forms</span></a>
-            <a href="#" class="menu-item"><i class="fas fa-chart-line"></i><span>Reports & Analytics</span></a>
-            <a href="#" class="menu-item"><i class="fas fa-cog"></i><span>Settings</span></a>
+            <a href="dashboard.php" class="menu-item <?= ($currentPage == 'dashboard.php') ? 'active' : '' ?>">
+                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
+            </a>
+            <a href="patients.php" class="menu-item <?= ($currentPage == 'patients.php') ? 'active' : '' ?>">
+                <i class="fas fa-users"></i><span>Patient Records</span>
+            </a>
+            <a href="#" class="menu-item <?= ($currentPage == 'medical_forms.php') ? 'active' : '' ?>">
+                <i class="fas fa-clipboard-list"></i><span>Medical Forms</span>
+            </a>
+            <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
+                <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>
+            </a>
+            <a href="#" class="menu-item <?= ($currentPage == 'settings.php') ? 'active' : '' ?>">
+                <i class="fas fa-cog"></i><span>Settings</span>
+            </a>
         </div>
     </nav>
 
@@ -295,6 +306,7 @@ document.querySelectorAll('.menu-item').forEach(item => {
         e.preventDefault();
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
         this.classList.add('active');
+        window.location.href = this.href; // navigate manually
     });
 });
 

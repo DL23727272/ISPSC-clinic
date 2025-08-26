@@ -145,63 +145,7 @@ if ($row = $result->fetch_row()) $today_visits = $row[0];
     </nav>
 
     <main class="main-content mt-5">
-        <div class="info-cards">
-            <!-- Total Students -->
-            <div class="info-card">
-                <div class="card-icon blue"><i class="fas fa-users"></i></div>
-                <div class="card-content">
-                    <h3>Total Students</h3>
-                    <div class="count"><?php echo $total_students; ?></div>
-                </div>
-            </div>
-
-            <!-- Today's Visits -->
-            <div class="info-card">
-                <div class="card-icon green"><i class="fas fa-calendar-day"></i></div>
-                <div class="card-content">
-                    <h3>Today's Visits</h3>
-                    <div class="count"><?php echo $today_visits; ?></div>
-                </div>
-            </div>
-
-            <!-- Total Health Info -->
-            <div class="info-card">
-                <div class="card-icon yellow"><i class="fas fa-file-alt"></i></div>
-                <div class="card-content">
-                    <h3>Total Health Info Entries</h3>
-                    <div class="count"><?php echo $total_health_info; ?></div>
-                </div>
-            </div>
-
-            <!-- This Month Students -->
-            <div class="info-card">
-                <div class="card-icon purple"><i class="fas fa-chart-bar"></i></div>
-                <div class="card-content">
-                    <h3>This Month</h3>
-                    <div class="count"><?php echo $this_month_students; ?></div>
-                </div>
-            </div>
-
-            <!-- Total Users -->
-            <div class="info-card">
-                <div class="card-icon red"><i class="fas fa-user-shield"></i></div>
-                <div class="card-content">
-                    <h3>Total Users</h3>
-                    <div class="count"><?php echo $total_users; ?></div>
-                </div>
-            </div>
-
-            <!-- Campus Cards -->
-            <?php foreach($campus_counts as $campus => $count): ?>
-            <div class="info-card">
-                <div class="card-icon campus"><i class="fas fa-school"></i></div>
-                <div class="card-content">
-                    <h3><?php echo htmlspecialchars($campus); ?></h3>
-                    <div class="count"><?php echo $count; ?></div>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        </div>
+    
     </main>
 </div>
 
