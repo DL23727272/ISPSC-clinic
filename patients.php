@@ -325,16 +325,13 @@ $result = $conn->query($sql);
                 <!-- Campus filter for super admins -->
                     <?php if ($role === 'super_admin'): ?>
                         <div class="col-auto" style="min-width: 180px; max-width: 220px;">
-                            <select name="campus" class="form-select" onchange="this.form.submit()">
+                            <select id="campusFilter" name="campus" class="form-select">
                                 <option value="">-- Select Campus --</option>
-                                <?php foreach($campuses as $campus): ?>
-                                    <option value="<?= htmlspecialchars($campus); ?>" <?= ($campus==$campus_filter) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($campus); ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                <!-- Options will be populated by JS -->
                             </select>
                         </div>
                     <?php else: ?>
+
                         <input type="hidden" name="campus" value="<?= htmlspecialchars($userCampus); ?>">
                         <div class="col-auto" style="min-width: 180px; max-width: 220px;">
                             <span class="badge bg-primary p-2 d-block text-truncate"><?= htmlspecialchars($userCampus); ?></span>
@@ -572,6 +569,24 @@ document.querySelectorAll('.edit-employee-btn').forEach(btn => {
     });
 });
 
+    const campusFilter = document.getElementById('campusFilter');
+    if(campusFilter){
+        Object.keys(data).forEach(campus => {
+            const option = document.createElement('option');
+            option.value = campus;
+            option.textContent = campus;
+            campusFilter.appendChild(option);
+        });
+
+        // Optionally, preselect current campus if you want
+        const currentCampus = "<?= htmlspecialchars($campus_filter); ?>"; // from PHP GET
+        if(currentCampus) campusFilter.value = currentCampus;
+
+        // Submit form when changed
+        campusFilter.addEventListener('change', () => {
+            campusFilter.form.submit();
+        });
+    }
 
 
 </script>

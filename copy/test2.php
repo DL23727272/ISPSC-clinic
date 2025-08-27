@@ -1,72 +1,70 @@
 <?php
-session_start();
-require_once 'db_connection.php';
+require_once __DIR__ . '/tcpdf/tcpdf.php';   // TCPDF core
+require_once __DIR__ . '/vendor/autoload.php'; // Composer autoload
 
-if (!isset($_GET['student_id']) || empty($_GET['student_id'])) {
-    ?>
-    <script>
-        const sid = sessionStorage.getItem("student_id");
-        if (sid) {
-            window.location.href = window.location.pathname + "?student_id=" + encodeURIComponent(sid);
-        } else {
-            document.body.innerHTML = "No student_id found in session storage.";
-        }
-    </script>
-    <?php
-    exit;
+use setasign\Fpdi\Tcpdf\Fpdi;
+
+// DB Connection
+$mysqli = new mysqli("localhost", "root", "", "isps_clinica");
+if ($mysqli->connect_errno) {
+    die("Failed to connect: " . $mysqli->connect_error);
 }
 
-$student_id = $conn->real_escape_string($_GET['student_id']);
+// Fetch one student for demo
+$student_id = "A21-00001";
+$query = $mysqli->prepare("SELECT s.*, h.* 
+    FROM students s
+    LEFT JOIN student_health_info h ON s.student_id = h.student_id
+    WHERE s.student_id = ?");
+$query->bind_param("s", $student_id);
+$query->execute();
+$data = $query->get_result()->fetch_assoc();
 
-// Fetch record with join
-$sql = "SELECT shi.*, s.first_name, s.last_name, s.campus, shi.created_at
-        FROM student_health_info shi
-        JOIN students s ON shi.student_id = s.student_id
-        WHERE shi.student_id = '$student_id'";
+// ✅ Use the Composer FPDI class
+$pdf = new Fpdi('P', 'mm', 'A4', true, 'UTF-8', false);
+$pdf->setPrintHeader(false);
+$pdf->setPrintFooter(false);
 
-$result = $conn->query($sql);
+// Import template
+$pageCount = $pdf->setSourceFile(__DIR__ . "/health_form_template.pdf");
+$templateId = $pdf->importPage(1);
 
-if (!$result || $result->num_rows == 0) {
-    die("Record not found for Student ID: " . htmlspecialchars($student_id));
-}
+$pdf->AddPage();
+$pdf->useTemplate($templateId, 0, 0, 210); // Fit to A4 width
 
-$record = $result->fetch_assoc();
-?>
+$pdf->SetFont('dejavusans', '', 9);
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Student</title>
-</head>
-<body>
-    <h3>Editing record for <?php echo htmlspecialchars($record['first_name'] . " " . $record['last_name']); ?> (<?php echo htmlspecialchars($record['student_id']); ?>)</h3>
+// ---------------- STUDENT INFO ----------------
+$pdf->SetXY(30, 45);
+$pdf->Cell(100, 5, trim($data['last_name'].", ".$data['first_name']." ".$data['middle_name']." ".$data['suffix'], " ,"), 0, 1);
 
-<form method="post" action="save_student.php">
-    <label>Student ID:</label>
-    <input type="text" name="student_id" value="<?php echo htmlspecialchars($record['student_id']); ?>" readonly><br><br>
+$pdf->SetXY(150, 45);
+$pdf->Cell(50, 5, $data['student_id'], 0, 1);
 
-    <label>Name:</label>
-    <input type="text" value="<?php echo htmlspecialchars($record['first_name'] . " " . $record['last_name']); ?>" readonly><br><br>
+$pdf->SetXY(30, 52);
+$pdf->Cell(80, 5, $data['campus'], 0, 1);
 
-    <label>Campus:</label>
-    <input type="text" value="<?php echo htmlspecialchars($record['campus']); ?>" readonly><br><br>
+$pdf->SetXY(120, 52);
+$pdf->Cell(80, 5, $data['department'], 0, 1);
 
-    <label>Created At:</label>
-    <input type="text" value="<?php echo htmlspecialchars($record['created_at']); ?>" readonly><br><br>
+$pdf->SetXY(30, 59);
+$pdf->Cell(80, 5, $data['course'] . (!empty($data['year']) ? " / " . $data['year'] : ""), 0, 1);
 
-    <label>Health Condition:</label>
-    <textarea name="health_condition"><?php echo htmlspecialchars($record['surgery'] ?? ''); ?></textarea><br><br>
+$pdf->SetXY(120, 59);
+$pdf->Cell(80, 5, $data['birthdate'], 0, 1);
 
-    <button type="submit">Save Changes</button>
-</form>
+$pdf->SetXY(30, 66);
+$pdf->Cell(80, 5, $data['sex'], 0, 1);
 
-   <script>
-    const studentId = sessionStorage.getItem("student_id");
-    if (studentId && !window.location.search.includes("student_id")) {
-        window.location.href = "student_edit.php?student_id=" + studentId;
-    }
-</script>
-</body>
-</html>
+$pdf->SetXY(120, 66);
+$pdf->Cell(80, 5, $data['age'], 0, 1);
+
+// ---------------- HEALTH INFO ----------------
+$pdf->SetXY(30, 90);
+$pdf->Cell(160, 5, "Blood Type: " . ($data['blood_type'] ?? ''), 0, 1);
+
+$pdf->SetXY(30, 96);
+$pdf->Cell(160, 5, "Allergies: " . ($data['allergy_alert'] ?? ''), 0, 1);
+
+// Output PDF
+$pdf->Output("student_health_" . $student_id . ".pdf", "I");
