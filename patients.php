@@ -227,6 +227,22 @@ $result = $conn->query($sql);
 </div>
 
 
+<!-- Edit Employee Modal -->
+<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Employee Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="editEmployeeBody">
+                <!-- Form will be loaded here via AJAX -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 
 
@@ -366,6 +382,12 @@ $result = $conn->query($sql);
                                 <?php if($type === 'students'): ?>
                                     <td>
                                         <button class="btn btn-sm btn-warning edit-student-btn" data-student-id="<?= $row['id_value']; ?>">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </td>
+                                <?php elseif($type === 'employees'): ?>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning edit-employee-btn" data-employee-id="<?= $row['id_value']; ?>">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
                                     </td>
@@ -519,6 +541,37 @@ document.querySelectorAll('.edit-student-btn').forEach(btn => {
         });
     });
 });
+
+
+document.querySelectorAll('.edit-employee-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const employeeId = this.dataset.employeeId;
+        fetch('edit_employee_form.php?employee_id=' + employeeId)
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('editEmployeeBody').innerHTML = html;
+            const modal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
+            modal.show();
+
+            // Form submission
+            document.getElementById('editEmployeeForm').addEventListener('submit', function(e){
+                e.preventDefault();
+                const formData = new FormData(this);
+                fetch('update_employee.php', {method:'POST', body:formData})
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success){
+                        Swal.fire({icon:'success', title:'Updated!', text:'Employee information updated.', timer:2000, showConfirmButton:false})
+                        .then(() => location.reload());
+                    } else {
+                        Swal.fire({icon:'error', title:'Error!', text:data.message});
+                    }
+                });
+            });
+        });
+    });
+});
+
 
 
 </script>

@@ -280,10 +280,13 @@ if ($type === 'employee') {
                                     <td><?= htmlspecialchars($row['campus']) ?></td>
                                     <td><?= htmlspecialchars($row['created_at']) ?></td>
                                     <td>
-                                        <a href="edit_health_info.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-primary">Edit</a>
-                                        <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" 
-                                        class="btn btn-sm btn-danger" 
-                                        onclick="return confirm('Delete this record?')">Delete</a>
+                                        <?php if($type === 'student'): ?>
+                                            <a href="edit_health_info.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-primary">Edit</a>
+                                            <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
+                                        <?php elseif($type === 'employee'): ?>
+                                            <a href="edit_employee_health_info.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-primary">Edit</a>
+                                            <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -291,6 +294,7 @@ if ($type === 'employee') {
                             <tr><td colspan="5" class="text-center">No records found.</td></tr>
                         <?php endif; ?>
                     </tbody>
+
 
                 </table>
             </div>
