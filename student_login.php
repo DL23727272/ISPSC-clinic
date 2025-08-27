@@ -67,7 +67,7 @@
                             </button>
                         </div>
                         </div>
-                        <button type="submit" class="btn btn-success w-100">
+                        <button type="submit" class="btn btn-primary w-100">
                         <i class="fas fa-sign-in-alt"></i> Login
                         </button>
                     </form>

@@ -2,34 +2,34 @@
 session_start();
 require_once 'db_connection.php';
 
-if (!isset($_GET['student_id']) || empty($_GET['student_id'])) {
+if (!isset($_GET['employee_id']) || empty($_GET['employee_id'])) {
     ?>
     <script>
-        const sid = sessionStorage.getItem("student_id");
+        const sid = sessionStorage.getItem("employee_id");
         if (sid) {
-            window.location.href = window.location.pathname + "?student_id=" + encodeURIComponent(sid);
+            window.location.href = window.location.pathname + "?employee_id=" + encodeURIComponent(sid);
         } else {
-            document.body.innerHTML = "No student_id found in session storage.";
+            document.body.innerHTML = "No employee_id found in session storage.";
         }
     </script>
     <?php
     exit;
 }
 
-$student_id = $conn->real_escape_string($_GET['student_id']);
+$employee_id = $conn->real_escape_string($_GET['employee_id']);
 
 // Fetch record
-$sql = "SELECT shi.*, s.student_id, s.first_name, s.last_name, s.campus, shi.created_at
-        FROM student_health_info shi
-        JOIN students s ON shi.student_id = s.student_id
-        WHERE shi.student_id = '$student_id'";
+$sql = "SELECT shi.*, s.employee_id, s.first_name, s.last_name, s.campus, shi.created_at
+        FROM employee_health_info shi
+        JOIN employees s ON shi.employee_id = s.employee_id
+        WHERE shi.employee_id = '$employee_id'";
 
 $result = $conn->query($sql);
 if(!$result){
     die("Query error: " . $conn->error);
 }
 if($result->num_rows == 0) {
-    die("Record not found for student_id: " . htmlspecialchars($student_id));
+    die("Record not found for employee_id: " . htmlspecialchars($employee_id));
 }
 
 $record = $result->fetch_assoc();
@@ -81,17 +81,17 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $health_id = $record['id']; // assuming primary key column is id
 
-    $update_sql = "UPDATE student_health_info 
+    $update_sql = "UPDATE employee_health_info 
                 SET ".implode(',', $update_values)." 
                 WHERE id='$health_id'";
 
     if ($conn->query($update_sql)) {
         $_SESSION['swal'] = ['icon'=>'success','title'=>'Success','text'=>'Record updated successfully!'];
-        header("Location: student_edit.php");
+        header("Location: employee_edit.php");
         exit;
     } else {
         $_SESSION['swal'] = ['icon'=>'error','title'=>'Error','text'=>'Error updating record: '.$conn->error];
-        header("Location: student_edit.php?student_id=$student_id");
+        header("Location: employee_edit.php?employee_id=$employee_id");
         exit;
     }
 }
@@ -220,13 +220,13 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
           <!-- Left side -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link" aria-current="page" href="student_medical.php">Home</a>
+              <a class="nav-link "aria-current="page" href="employee_medical.php">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" style="color: yellow" href="student_edit.php">Edit Health Info</a>
+              <a class="nav-link active"   style="color: yellow"  href="employee_edit.php">Edit Health Info</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link"  href="student_info.php">Edit Personal Info</a>
+              <a class="nav-link"  href="employee_info.php">Edit Personal Info</a>
             </li>
           </ul>
 
@@ -652,7 +652,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     text: '<?= $_SESSION['swal']['text'] ?>'
     }).then(()=>{
         <?php if($_SESSION['swal']['icon'] === 'success'): ?>
-            window.location.href = "student_edit.php?student_id=" + studentId;
+            window.location.href = "employee_edit.php?employee_id=" + employeeId;
         <?php endif; ?>
     });
     </script>
@@ -677,9 +677,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
      <script>
-        const studentId = sessionStorage.getItem("student_id");
-        if (studentId && !window.location.search.includes("student_id")) {
-            window.location.href = "student_edit.php?student_id=" + studentId;
+        const employeeId = sessionStorage.getItem("employee_id");
+        if (employeeId && !window.location.search.includes("employee_id")) {
+            window.location.href = "employee_edit.php?employee_id=" + employeeId;
         }
     </script>
 

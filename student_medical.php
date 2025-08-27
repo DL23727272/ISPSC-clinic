@@ -103,73 +103,42 @@
       </div>
     </header>
     
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg sticky-top">
       <div class="container">
         <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <i class="navbar-toggler-icon" id="menu"></i>
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <i class="navbar-toggler-icon" id="menu"></i>
         </button>
-        </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
+          <!-- Left side -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a
-                class="nav-link active"
-                style="color: yellow"
-                aria-current="page"
-                href="index.php"
-                >Home</a
-              >
+              <a class="nav-link active" style="color: yellow" aria-current="page" href="student_medical.php">Home</a>
             </li>
             <li class="nav-item">
-              <a  class="nav-link "
-                aria-current="page" href="student_edit.php">Edit Health Info</a>
+              <a class="nav-link"  href="student_edit.php">Edit Health Info</a>
             </li>
             <li class="nav-item">
-              <a  class="nav-link "
-                aria-current="page" href="student_info.php">Edit Personal Info</a>
+              <a class="nav-link"  href="student_info.php">Edit Personal Info</a>
             </li>
-             <li class="nav-item">
-              <a
-                class="nav-link"
-                href="index.php"
-                ><i class="fa-solid fa-power-off"></i> Logout</a
-              >
-            </li>
-            <!-- <li class="nav-item">
-              <a class="nav-link" href="test2.php">Instruction</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="research.php">Research</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="extension.php">Extension</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="internationalization.php"
-                >Internationalization</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="psychometrician-reviewer.php"
-                >Psychometrician Reviewer</a
-              >
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="alumni.php">Alumni</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="others.php">Others</a>
-            </li> -->
           </ul>
-          
+
+          <!-- Right side (Logout) -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="index.php">
+                <i class="fa-solid fa-power-off"></i> Logout
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>

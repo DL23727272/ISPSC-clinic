@@ -26,7 +26,7 @@ function sendRegistrationEmail($toEmail, $password, $loginLink) {
         $mail->Subject = "Welcome to ISPSC-CLINICA!";
 
         $mail->Body = "
-            <p>Dear Student,</p>
+            <p>Dear Student/Employee,</p>
             
             <p>Welcome to <b>ISPSC-CLINICA</b>!</p>
             

@@ -2,80 +2,45 @@
 session_start();
 require_once 'db_connection.php';
 
-// Make sure user is logged in
-if (!isset($_SESSION['user_id'])) {
-    header("Location: admin_login.php");
-    exit;
-}
-
-$role = $_SESSION['role'];       // "admin" or "super_admin"
-$userCampus = $_SESSION['campus']; // Campus from users table
-
-// Fetch campuses only if superadmin
+// Fetch distinct campuses for filter dropdown
 $campuses = [];
-if ($role === 'super_admin') {
-    $result = $conn->query("SELECT DISTINCT campus FROM employees ORDER BY campus ASC");
-    while($row = $result->fetch_assoc()){
-        $campuses[] = $row['campus'];
-    }
-} else {
-    // Campus admin only sees their campus
-    $campuses[] = $userCampus;
+$result = $conn->query("SELECT DISTINCT campus FROM students ORDER BY campus ASC");
+while($row = $result->fetch_assoc()){
+    $campuses[] = $row['campus'];
 }
 
-// Get search, campus, and type filter values
+// Get search and campus filter values
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $campus_filter = isset($_GET['campus']) ? $_GET['campus'] : '';
-$type = isset($_GET['type']) ? $_GET['type'] : 'employees'; // default to employees
 
-// Restrict campus filter for admin
-if ($role === 'admin') {
-    $campus_filter = $userCampus;
-}
-
-// Determine table and fields based on type
-if ($type === 'students') {
-    $table = 'students';
-    $idField = 'student_id';
-    $nameField = "CONCAT(last_name, ', ', first_name)";
-    $extraFields = 'middle_name, suffix, age, campus, department, course, year, major, semester, course_year, birthdate, sex, permanent_address, phone_number, civil_status, religion, contact_person, contact_address, contact_no, email, created_at';
-} else {
-    $table = 'employees';
-    $idField = 'employee_id';
-    $nameField = "CONCAT(last_name, ', ', first_name)";
-    $extraFields = 'middle_name, suffix, age, campus, birthdate, sex, permanent_address, phone_number, civil_status, religion, contact_person, contact_address, contact_no, email, created_at';
-}
-
-// Build query
-$sql = "SELECT id, $idField AS id_value, $nameField AS full_name, $extraFields
-        FROM $table
+// Prepare query
+$sql = "SELECT s.student_id, s.campus, s.department, s.course, s.year, s.semester,
+               s.last_name, s.first_name, s.middle_name, s.age, s.sex,
+               s.permanent_address, s.phone_number, s.email,
+               sh.blood_type, sh.allergy_alert, sh.disability, sh.created_at AS health_record_date
+        FROM students s
+        LEFT JOIN student_health_info sh ON s.student_id = sh.student_id
         WHERE 1";
 
-// Apply search filter
-if ($search != '') {
+if($search != ''){
     $search_esc = $conn->real_escape_string($search);
-    $sql .= " AND ($nameField LIKE '%$search_esc%' OR $idField LIKE '%$search_esc%')";
+    $sql .= " AND (s.first_name LIKE '%$search_esc%' OR s.last_name LIKE '%$search_esc%' OR s.student_id LIKE '%$search_esc%')";
 }
 
-// Apply campus filter
-if ($campus_filter != '') {
+if($campus_filter != ''){
     $campus_esc = $conn->real_escape_string($campus_filter);
-    $sql .= " AND campus = '$campus_esc'";
+    $sql .= " AND s.campus = '$campus_esc'";
 }
 
-$sql .= " ORDER BY $nameField ASC";
+$sql .= " ORDER BY s.last_name ASC";
+
 $result = $conn->query($sql);
 ?>
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Patients Record</title>
+    <title>Admin Dashboard | ISPSC CLINICA</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -236,23 +201,11 @@ $result = $conn->query($sql);
 <div class="dashboard-container">
     <header class="header">
         <div class="header-left">
-            <div class="logo">
-                <i class="fas fa-chart-bar"></i>
-                <span>ISPSC CLINICA</span>
-            </div>
-            <span class="header-title">
-                 Admin Dashboard
-                <?php if (isset($_SESSION['campus'])): ?>
-                    - <?= htmlspecialchars($_SESSION['campus']); ?>
-                <?php endif; ?> Campus
-            </span>
+            <div class="logo"><i class="fas fa-chart-bar"></i><span>ISPSC CLINICA</span></div>
+            <span class="header-title">Admin Dashboard</span>
         </div>
         <div class="header-right">
-            <button class="user-info" id="user-info-btn">
-                <span>
-                    <?= isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : "Admin User"; ?>
-                </span>
-            </button>
+            <button class="user-info" id="user-info-btn"><span>Admin User</span></button>
             <i class="fas fa-sign-out-alt logout-btn" id="logout-icon"></i>
         </div>
     </header>
@@ -260,7 +213,7 @@ $result = $conn->query($sql);
     <div class="logout-message" id="logout-message"><i class="fas fa-check-circle"></i><span>Successfully logged out! Redirecting...</span></div>
 
     <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
-   <nav class="sidebar">
+    <nav class="sidebar">
         <div class="sidebar-menu">
             <a href="dashboard.php" class="menu-item <?= ($currentPage == 'dashboard.php') ? 'active' : '' ?>">
                 <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
@@ -280,110 +233,63 @@ $result = $conn->query($sql);
         </div>
     </nav>
 
-    
-        <main class="main-content mt-5">
-            <div class="container mt-5">
-            <h2>Patient Records</h2>
-        
-                <form method="GET" class="filters row g-2 align-items-center">
+    <main class="main-content mt-5">
+      <h2>Patient Records</h2>
 
-                
+        <form method="GET" class="filters">
+            <input type="text" name="search" placeholder="Search by Name or ID" value="<?php echo htmlspecialchars($search); ?>">
+            <select name="campus">
+                <option value="">-- Select Campus --</option>
+                <?php foreach($campuses as $campus): ?>
+                    <option value="<?php echo htmlspecialchars($campus); ?>" <?php if($campus==$campus_filter) echo 'selected'; ?>>
+                        <?php echo htmlspecialchars($campus); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit"><i class="fas fa-search"></i> Search</button>
+        </form>
 
-                    <!-- Search input -->
-                    <div class="col-auto">
-                        <input type="text" 
-                            name="search" 
-                            class="form-control" 
-                            placeholder="Search by Name or ID" 
-                            value="<?= htmlspecialchars($search); ?>">
-                    </div>
-
-                    <!-- Type selector: Student or Employee -->
-                    <div class="col-auto" style="min-width: 150px; max-width: 200px;">
-                        <select name="type" class="form-select">
-                            <option value="employees" <?= (!isset($_GET['type']) || $_GET['type']=='employees') ? 'selected' : '' ?>>Employees</option>
-                            <option value="students" <?= (isset($_GET['type']) && $_GET['type']=='students') ? 'selected' : '' ?>>Students</option>
-                        </select>
-                    </div>
-
-                <!-- Campus filter for super admins -->
-                    <?php if ($role === 'super_admin'): ?>
-                        <div class="col-auto" style="min-width: 180px; max-width: 220px;">
-                            <select name="campus" class="form-select" onchange="this.form.submit()">
-                                <option value="">-- Select Campus --</option>
-                                <?php foreach($campuses as $campus): ?>
-                                    <option value="<?= htmlspecialchars($campus); ?>" <?= ($campus==$campus_filter) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($campus); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    <?php else: ?>
-                        <input type="hidden" name="campus" value="<?= htmlspecialchars($userCampus); ?>">
-                        <div class="col-auto" style="min-width: 180px; max-width: 220px;">
-                            <span class="badge bg-primary p-2 d-block text-truncate"><?= htmlspecialchars($userCampus); ?></span>
-                        </div>
-                    <?php endif; ?>
-
-
-                    <!-- Submit button -->
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> Search
+        <table>
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Campus</th>
+                    <th>Sex</th>
+                    <th>Address</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    
+                    <th>Health Record Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if($result->num_rows > 0): ?>
+                <?php while($row = $result->fetch_assoc()): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['student_id']); ?></td>
+                        <td><?php echo htmlspecialchars($row['last_name'].', '.$row['first_name'].' '.$row['middle_name']); ?></td>
+                        <td><?php echo htmlspecialchars($row['campus']); ?></td>
+                        <td><?php echo htmlspecialchars($row['sex']); ?></td>
+                        <td><?php echo htmlspecialchars($row['permanent_address']); ?></td>
+                        <td><?php echo htmlspecialchars($row['phone_number']); ?></td>
+                        <td><?php echo htmlspecialchars($row['email']); ?></td>
+                        <td><?php echo htmlspecialchars($row['health_record_date']); ?></td>
+                        <td>
+                        <button class="btn btn-sm btn-warning edit-btn" data-student-id="<?php echo $row['student_id']; ?>">
+                            <i class="fas fa-edit"></i> Edit
                         </button>
-                    </div>
+                        </td>
 
-                </form>
-
-
-
-
-
-
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th><?php echo ($type === 'students') ? 'Student ID' : 'Employee ID'; ?></th>
-                            <th>Name</th>
-                            <th>Campus</th>
-                            <th>Sex</th>
-                            <th>Age</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php if ($result && $result->num_rows > 0): ?>
-                        <?php while($row = $result->fetch_assoc()): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($row['id_value']); ?></td>
-                                <td><?= htmlspecialchars($row['full_name']); ?></td>
-                                <td><?= htmlspecialchars($row['campus']); ?></td>
-                                <td><?= htmlspecialchars($row['sex']); ?></td>
-                                <td><?= htmlspecialchars($row['age']); ?></td>
-                                <td><?= htmlspecialchars($row['email']); ?></td>
-                                <td><?= htmlspecialchars($row['phone_number']); ?></td>
-                                <?php if($type === 'students'): ?>
-                                    <td>
-                                        <button class="btn btn-sm btn-warning edit-student-btn" data-student-id="<?= $row['id_value']; ?>">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </button>
-                                    </td>
-                                <?php endif; ?>
-
-                                
-                            </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr><td colspan="8" class="text-center">No records found.</td></tr>
-                    <?php endif; ?>
-                    </tbody>
-
-                </table>
-
-
-            </div>
-        </main>
+                    </tr>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr><td colspan="16" style="text-align:center;">No records found.</td></tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </main>
 </div>
 
 <script>
@@ -419,9 +325,8 @@ const data = {
   "CANDON": { departments: { "College of Business and Hospitality Management": { courses: ["Bachelor of Science in Hospitality Management","Bachelor of Science in Tourism Management"], majors: ["None"] }, "College of Computing Studies": { courses: ["Bachelor of Science in Information Technology"], majors: ["None"] }, "College of Teacher Education": { courses: ["Bachelor of Secondary Education"], majors: ["Filipino"] } } },
   "CERVANTES": { departments: { "College of Arts and Science": { courses: [" Bachelor of Science in Information Technology","Bachelor of Science in Criminology"], majors: ["Web and Mobile Application","None"] }, "College of Teacher Education": { courses: ["Bachelor of Secondary Education","Bachelor of Elementary Education","Bachelor of Technology and Livelihood Education","Bachelor of Technical-Vocational Teacher Education"], majors: ["None","Mathematics","English","Science","Technology and Livelihood Education","Agri-Fishery Arts","Home Economics","Food Service Management","Agricultural Crops Production"] } } }
 };
-
 // Edit Student Modal JS
-document.querySelectorAll('.edit-student-btn').forEach(btn => {
+document.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', function() {
         const studentId = this.dataset.studentId;
         fetch('edit_student_form.php?student_id=' + studentId)
@@ -431,7 +336,7 @@ document.querySelectorAll('.edit-student-btn').forEach(btn => {
             const modal = new bootstrap.Modal(document.getElementById('editStudentModal'));
             modal.show();
 
-            // Cascading dropdowns
+            // --- Cascading dropdowns ---
             const campusSelect = document.getElementById('campus');
             const departmentSelect = document.getElementById('department');
             const courseSelect = document.getElementById('course');
@@ -519,7 +424,6 @@ document.querySelectorAll('.edit-student-btn').forEach(btn => {
         });
     });
 });
-
 
 </script>
 </body>

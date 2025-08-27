@@ -1,243 +1,594 @@
-<?php
-// Include database connection
-include 'db_connection.php'; // Use your actual DB connection file
-
-// Initialize variables for success and error messages
-$message = '';
-$error = '';
-
-// Handle form submission
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect and sanitize form data
-    $data = $_POST;
-
-    // Prepare SQL statement
-    $stmt = $conn->prepare("INSERT INTO medical_records 
-        (lastname, firstname, middlename, age, gender, birthdate, address, phone, civil_status, religion, guardian, 
-         asthma, diabetes, hypertension, seizure, heart_disease, allergy, tb, others,
-         fam_asthma, fam_diabetes, fam_hypertension, fam_heart,
-         bp, hr, rr, temp, height, weight, remarks, management, sign_date)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-    $stmt->bind_param("sssssssssssssssssssssssssssssss",
-        $data['lastname'], $data['firstname'], $data['middlename'], $data['age'], $data['gender'], $data['birthdate'],
-        $data['address'], $data['phone'], $data['civil_status'], $data['religion'], $data['guardian'],
-        isset($data['asthma']) ? $data['asthma'] : null,
-        isset($data['diabetes']) ? $data['diabetes'] : null,
-        isset($data['hypertension']) ? $data['hypertension'] : null,
-        isset($data['seizure']) ? $data['seizure'] : null,
-        isset($data['heart_disease']) ? $data['heart_disease'] : null,
-        isset($data['allergy']) ? $data['allergy'] : null,
-        isset($data['tb']) ? $data['tb'] : null,
-        isset($data['others']) ? $data['others'] : null,
-        isset($data['fam_asthma']) ? $data['fam_asthma'] : null,
-        isset($data['fam_diabetes']) ? $data['fam_diabetes'] : null,
-        isset($data['fam_hypertension']) ? $data['fam_hypertension'] : null,
-        isset($data['fam_heart']) ? $data['fam_heart'] : null,
-        $data['bp'], $data['hr'], $data['rr'], $data['temp'], $data['height'], $data['weight'],
-        $data['remarks'], $data['management'], $data['sign_date']
-    );
-
-    // Execute the statement and check for success
-    if ($stmt->execute()) {
-        $message = "Medical record submitted successfully.";
-    } else {
-        $error = "Error: " . $stmt->error;
-    }
-
-    // Close the statement
-    $stmt->close();
-}
-
-// Close the database connection
-$conn->close();
-?>
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISPSC CLINICA - Employee Medical Form</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4/dist/sweetalert2.all.min.js
+    "></script>
+    <link href="
+    https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4/dist/sweetalert2.min.css
+    " rel="stylesheet">
+    <link href="styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="img/logo.ico" />
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #fff; }
-        .form-title { text-align: center; font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
-        .subtitle { text-align: center; font-size: 1em; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-        td, th { border: 1px solid #333; padding: 4px; font-size: 0.95em; vertical-align: top; }
-        .section-header { background: #e6f2ff; font-weight: bold; text-align: left; }
-        .checkbox-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; }
-        .label-bold { font-weight: bold; }
-        input[type="text"], input[type="date"], input[type="number"], select, textarea { width: 98%; padding: 2px; font-size: 0.95em; }
-        .no-border { border: none !important; }
-        .signature-line { border-bottom: 1px solid #333; width: 200px; display: inline-block; }
-        .success-message { color: green; }
-        .error-message { color: red; }
+        /* *{
+            border-radius: 5px;
+            border: 1px solid black;
+        } */
+            /* Striped rows */
+        .striped-row:nth-child(even) {
+            background-color: #f8f9fa; /* light gray */
+        }
+        .striped-row:nth-child(odd) {
+            background-color: #ffffff; /* white */
+        }
+
+        /* Section Headers */
+        .section-header {
+            background-color: #cce5ff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        /* Sub-Headers */
+        .sub-header {
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: #0056b3;
+        }
+
+        /* Instructions */
+        .instructions {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            color: #555;
+        }
     </style>
-</head>
-<body>
-    <div class="form-title">
-        Republic of the Philippines<br>
-        ILOCOS SUR POLYTECHNIC STATE COLLEGE<br>
-        Sta. Maria Campus, Sta. Maria, Ilocos Sur<br>
-        <span class="subtitle">OPHCL Health Form</span>
+  </head>
+  <body>
+
+
+    <header class="header">
+      <div class="container">
+        <div
+          class="d-flex flex-column align-items-center justify-content-center text-center"
+        >
+          <div>
+            <img
+              src="img/ispsc.png"
+              alt="ISPSC Logo"
+              width="100"
+              height="100"
+              class="me-3"
+            />
+            <img
+              class="bagong-pilipinas"
+              src="img/bagong-pilipinas.png"
+              alt="ISPSC Logo"
+              width="120"
+              height="120"
+              class="me-3"
+            />
+          </div>
+          <div>
+            <h1 class="ispsc-logo mb-0">REPUBLIC OF THE PHILIPPINES</h1>
+            <hr class="my-2 border-white" />
+            <h1 class="ispsc-logo mb-0">
+              ILOCOS SUR POLYTECHNIC STATE COLLEGE
+            </h1>
+            <h2 class="ispsc-logo mb-0">ILOCOS SUR, PHILIPPINES</h2>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <nav class="navbar navbar-expand-lg sticky-top">
+      <div class="container">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <i class="navbar-toggler-icon" id="menu"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <!-- Left side -->
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link active" style="color: yellow" aria-current="page" href="employee_medical.php">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"  href="employee_edit.php">Edit Health Info</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"  href="employee_info.php">Edit Personal Info</a>
+            </li>
+          </ul>
+
+          <!-- Right side (Logout) -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="index.php">
+                <i class="fa-solid fa-power-off"></i> Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+
+  <div class="container my-5">
+    
+    <h2 class="mb-4 text-center fw-bold">Employee Health Information Form</h2>
+
+        <div class="mb-3 p-3 rounded" style="background-color: #d1ecf1;">
+            <p class="small mt-2 mb-0">
+                Instructions: For items that are not Applicable, LEAVE IT BLANK. 
+                Mark with (√) if YES, and Leave it Blank for NO
+            </p>
+        </div>
+
+        <div class="container my-4">
+           <form id="medicalForm" method="POST">
+
+                <!-- Basic Info -->
+                <div class="section-header">HEALTH INFORMATION</div>
+                <div class="row mb-3 p-3 rounded striped-row">
+                    <div class="col-md-4">
+                        <label class="form-label">Blood Type</label>
+                        <input type="text" class="form-control" name="blood_type">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Allergy / Alert</label>
+                        <input type="text" class="form-control" name="allergy_alert">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Disability (if any)</label>
+                        <input type="text" class="form-control" name="disability">
+                    </div>
+                </div>
+
+                <!-- Past Medical History -->
+                <div class="section-header">Past Medical History</div>
+
+                <!-- Row 1 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="chicken_pox">
+                        <label class="form-check-label">Chicken Pox</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="hypertension">
+                        <label class="form-check-label">Hypertension</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="thyroid_disease">
+                        <label class="form-check-label">Thyroid Disease</label>
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="mumps">
+                        <label class="form-check-label">Mumps</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="diabetes">
+                        <label class="form-check-label">Diabetes</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="heart_disease">
+                        <label class="form-check-label">Heart Disease</label>
+                    </div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="measles">
+                        <label class="form-check-label">Measles</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="asthma">
+                        <label class="form-check-label">Bronchial Asthma</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="blood_transfusion">
+                        <label class="form-check-label">Previous Blood Transfusion</label>
+                    </div>
+                </div>
+
+                <!-- Row 4 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="tuberculosis">
+                        <label class="form-check-label">Tuberculosis</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="peptic_ulcer">
+                        <label class="form-check-label">Peptic Ulcer Disease</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="cancer">
+                        <label class="form-check-label">Cancer</label>
+                        <input type="text" class="form-control mt-1" placeholder="Specify Type" name="cancer_type">
+                    </div>
+                </div>
+
+                <!-- Row 5 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="epilepsy">
+                        <label class="form-check-label">Epilepsy</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="hepatitis">
+                        <label class="form-check-label">Hepatitis</label>
+                        <input type="text" class="form-control mt-1" placeholder="Specify Type" name="hepatitis_type">
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="anti_coagulants">
+                        <label class="form-check-label">Use of Anti-coagulants</label>
+                    </div>
+                </div>
+
+                <!-- Row 6 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="bone_fracture">
+                        <label class="form-check-label">Bone Fracture</label>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Hospitalizations</label>
+                        <div class="row mb-1">
+                            <div class="col-md-4"><input type="date" class="form-control" name="hospitalization_date"></div>
+                            <div class="col-md-4"><input type="text" class="form-control" name="hospitalization_diagnosis" placeholder="Diagnosis"></div>
+                            <div class="col-md-4"><input type="text" class="form-control" name="hospitalization_hospital" placeholder="Hospital"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 7 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-6">
+                        <label class="form-label">Surgery (if any)</label>
+                        <input type="text" class="form-control" name="surgery">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Accident/s</label>
+                        <input type="text" class="form-control" name="accidents">
+                    </div>
+                </div>
+
+
+                <!-- Family Medical History -->
+                <div class="section-header">Family Medical History</div>
+
+                <!-- Row 1 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_hypertension">
+                        <label class="form-check-label">Hypertension</label>
+                    </div>
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_thyroid">
+                        <label class="form-check-label">Thyroid Disease</label>
+                    </div>
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_autoimmune">
+                        <label class="form-check-label">Autoimmune Disease</label>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" class="form-control" placeholder="Others" name="fam_others">
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_diabetes">
+                        <label class="form-check-label">Diabetes</label>
+                    </div>
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_cancer">
+                        <label class="form-check-label">Cancer</label>
+                        <input type="text" class="form-control mt-1" placeholder="Specify Form" name="fam_cancer_form">
+                    </div>
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_asthma">
+                        <label class="form-check-label">Bronchial Asthma</label>
+                        <input type="text" class="form-control mt-1" placeholder="Specify Form" name="fam_asthma_form">
+                    </div>
+                    <div class="col-md-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="fam_heart">
+                        <label class="form-check-label">Heart Disease</label>
+                    </div>
+                </div>
+
+                <!-- Immunization History -->
+                <div class="section-header">Immunization History</div>
+
+                <!-- Row 1 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4">
+                        <label>MMR - Date Completed</label>
+                        <input type="date" class="form-control" name="mmr_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Hepatitis Vaccine - Date Completed</label>
+                        <input type="date" class="form-control" name="hepatitis_vaccine_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label>FLU Vaccine - Date Completed</label>
+                        <input type="date" class="form-control" name="flu_vaccine_date">
+                    </div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4">
+                        <label>Anti-Rabies - Date Completed</label>
+                        <input type="date" class="form-control" name="anti_rabies_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label>Anti-Tetanus - Date Completed</label>
+                        <input type="date" class="form-control" name="anti_tetanus_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label>PPV23 (Pneumothorax)</label>
+                        <input type="date" class="form-control" name="ppv23_date">
+                    </div>
+                </div>
+
+                <!-- Row 3: COVID19 Vaccine -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-12"><label>Anti-COVID19 Vaccine</label></div>
+                    <div class="col-md-3"><input type="text" class="form-control" placeholder="1st Dose" name="covid_1st_dose"></div>
+                    <div class="col-md-3"><input type="date" class="form-control" name="covid_1st_date"></div>
+                    <div class="col-md-3"><input type="text" class="form-control" placeholder="2nd Dose" name="covid_2nd_dose"></div>
+                    <div class="col-md-3"><input type="date" class="form-control" name="covid_2nd_date"></div>
+                </div>
+
+                <!-- Row 4: Boosters -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-3"><input type="text" class="form-control" placeholder="1st Booster" name="covid_1st_booster"></div>
+                    <div class="col-md-3"><input type="date" class="form-control" name="covid_1st_booster_date"></div>
+                    <div class="col-md-3"><input type="text" class="form-control" placeholder="2nd Booster" name="covid_2nd_booster"></div>
+                    <div class="col-md-3"><input type="date" class="form-control" name="covid_2nd_booster_date"></div>
+                </div>
+
+
+                <!-- Personal/Social History -->
+                <div class="section-header">Personal/Social History</div>
+
+                <!-- Row 1: Checkboxes -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="smoker">
+                        <label class="form-check-label">Smoker</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="alcohol">
+                        <label class="form-check-label">Alcohol Drinker</label>
+                    </div>
+                    <div class="col-md-4 form-check">
+                        <input type="checkbox" class="form-check-input" name="illicit_drugs">
+                        <label class="form-check-label">Illicit Drug User</label>
+                    </div>
+                </div>
+
+                <!-- Row 2: Smoking Details -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4">
+                        <label>No. of Sticks/Day</label>
+                        <input type="text" class="form-control" name="sticks_per_day">
+                    </div>
+                   <div class="col-md-4">
+                        <label>Type of Alcohol</label>
+                        <input type="text" class="form-control" name="alcohol_type">
+                    </div>
+                     <div class="col-md-4">
+                        <label>Type of Illicit Drug</label>
+                        <input type="text" class="form-control" name="drug_type">
+                    </div>
+                </div>
+
+                <!-- Row 3: Alcohol Details -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4">
+                        <label>No. of Years</label>
+                        <input type="text" class="form-control" name="years_smoking">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label>No. of Bottles/mL per Bottle</label>
+                        <input type="text" class="form-control" name="bottles_per_day">
+                    </div>
+                      <div class="col-md-4">
+                        <label>No. of Bottles/mL per Day (if applicable)</label>
+                        <input type="text" class="form-control" name="drug_quantity">
+                    </div>
+                   
+                </div>
+
+                <!-- Row 4: Illicit Drug Details -->
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-4">
+                        <label>Pack Years</label>
+                        <input type="text" class="form-control" name="pack_years">
+                    </div>
+                   
+                  
+                    <div class="col-md-4">
+                        <label>Frequency</label>
+                        <input type="text" class="form-control" name="drug_frequency">
+                    </div> <div class="col-md-4">
+                        <label>Frequency</label>
+                        <input type="text" class="form-control" name="alcohol_frequency">
+                    </div>
+                </div>
+
+
+            <!-- Maternal/Menstrual History -->
+                <div class="section-header">Maternal and Menstrual History (For Female/s Only)</div>
+
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-3">
+                        <label>No. of Pregnancies</label>
+                        <input type="text" class="form-control" name="no_pregnancy">
+                    </div>
+                    <div class="col-md-3">
+                        <label>No. Alive</label>
+                        <input type="text" class="form-control" name="no_alive">
+                    </div>
+                    <div class="col-md-3">
+                        <label>No. of Stillbirth/Abortion</label>
+                        <input type="text" class="form-control" name="no_stillbirth_abortion">
+                    </div>
+                    <div class="col-md-3">
+                        <label>LMP</label>
+                        <input type="date" class="form-control" name="lmp">
+                    </div>
+                </div>
+
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-3">
+                        <label>Menarche</label>
+                        <input type="date" class="form-control" name="menarche">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Duration</label>
+                        <input type="text" class="form-control" name="duration">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Amount</label>
+                        <input type="text" class="form-control" name="amount">
+                    </div>
+                    <div class="col-md-3">
+                        <label>Interval</label>
+                        <input type="text" class="form-control" name="menstrual_interval">
+                    </div>
+                </div>
+
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-6">
+                        <label>Symptom/s</label>
+                        <input type="text" class="form-control" name="symptoms">
+                    </div>
+                    <div class="col-md-6">
+                        <label>Gyne Pathology</label>
+                        <input type="text" class="form-control" name="gyne_pathology">
+                    </div>
+                </div>
+
+
+                <!-- Dental History -->
+                <div class="section-header">Dental History</div>
+                <div class="row mb-2 striped-row">
+                    <div class="col-md-6"><label>Last Dental Visit</label><input type="date" class="form-control" name="last_dental_visit"></div>
+                    <div class="col-md-6"><label>Procedure Done</label><input type="text" class="form-control" name="dental_procedure"></div>
+                </div>
+
+                <!-- Button to Open Modal -->
+                <div class="form-check mt-4">
+                    <input type="checkbox" class="form-check-input" id="consentCheckbox">
+                    <label class="form-check-label" for="consentCheckbox">
+                        I have read and agree to the Declaration and Data Privacy Consent
+                    </label>
+                </div>
+
+                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#declarationModal" id="openDeclarationModal">
+                    View Declaration & Consent
+                </button>
+
+                <!-- Modal -->
+                <div class="modal fade" id="declarationModal" tabindex="-1" aria-labelledby="declarationModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="declarationModalLabel">Declaration and Data Privacy Consent</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            I hereby declare that the information above is accurate and complete. I understand that withholding any relevant medical information,
+                        any misrepresentation of facts or misleading information given by me may be used as a ground for the filing of cases against me in 
+                        accordance with the law. I voluntarily and freely consent to undergo physical assessment and the collection and processing of the information
+                        above to enable the Ilocos Sur Polytechnic State College – Health Services Unit to render necessary health services to all its clients.
+                        I also declare that I was excellently informed on the process of data collection, purpose of this medical information, 
+                        and the Provisions of Republic Act 10173, Data Privacy Act of 2012.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                    </div>
+                </div>
+                </div>
+
+
+                <button type="submit" class="btn btn-success w-100 mt-4">Submit Health Information</button>
+            </form>
+
+        </div>
+
+
     </div>
-    <?php if ($message): ?><div class="success-message"><?php echo $message; ?></div><?php endif; ?>
-    <?php if ($error): ?><div class="error-message"><?php echo $error; ?></div><?php endif; ?>
-    <form method="post">
-        <table>
-            <tr>
-                <td colspan="2">Name: <input type="text" name="name_full"></td>
-                <td>Sex: <select name="sex"><option>Male</option><option>Female</option></select></td>
-                <td>Date of Birth: <input type="date" name="dob"></td>
-            </tr>
-            <tr>
-                <td>Permanent Address: <input type="text" name="address"></td>
-                <td>Civil Status: <input type="text" name="civil_status"></td>
-                <td colspan="2">Contact Person (In case of Emergency): <input type="text" name="emergency_contact"></td>
-            </tr>
-            <tr>
-                <td>Blood Type: <input type="text" name="blood_type"></td>
-                <td colspan="3">ALERT AND ALLERGY: <input type="text" name="alert_allergy"></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Past Medical History</td>
-            </tr>
-            <tr>
-                <td>
-                    <label><input type="checkbox" name="pmh_chickenpox"> Chicken Pox</label><br>
-                    <label><input type="checkbox" name="pmh_measles"> Measles</label><br>
-                    <label><input type="checkbox" name="pmh_mumps"> Mumps</label><br>
-                    <label><input type="checkbox" name="pmh_rheumatic"> Rheumatic Fever</label>
-                </td>
-                <td>
-                    <label><input type="checkbox" name="pmh_bronchial"> Bronchial Asthma</label><br>
-                    <label><input type="checkbox" name="pmh_pneumonia"> Pneumonia</label><br>
-                    <label><input type="checkbox" name="pmh_ptb"> PTB</label><br>
-                    <label><input type="checkbox" name="pmh_epilepsy"> Epilepsy</label>
-                </td>
-                <td>
-                    <label><input type="checkbox" name="pmh_heart"> Heart Disease</label><br>
-                    <label><input type="checkbox" name="pmh_blood"> Blood Transfusion</label><br>
-                    <label><input type="checkbox" name="pmh_surgery"> Surgery/Operation</label>
-                </td>
-                <td>
-                    <label><input type="checkbox" name="pmh_anticoagulants"> Anti-coagulants</label><br>
-                    <label><input type="checkbox" name="pmh_others"> Others: <input type="text" name="pmh_others_text"></label>
-                </td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Family Medical History</td>
-            </tr>
-            <tr>
-                <td><label><input type="checkbox" name="fmh_hypertension"> Hypertension</label></td>
-                <td><label><input type="checkbox" name="fmh_thyroid"> Thyroid Disease</label></td>
-                <td><label><input type="checkbox" name="fmh_bronchial"> Bronchial Asthma</label></td>
-                <td><label><input type="checkbox" name="fmh_diabetes"> Diabetes</label></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Immunization History</td>
-            </tr>
-            <tr>
-                <td>BCG: <input type="text" name="im_bcg"></td>
-                <td>DPT: <input type="text" name="im_dpt"></td>
-                <td>Polio: <input type="text" name="im_polio"></td>
-                <td>Measles: <input type="text" name="im_measles"></td>
-            </tr>
-            <tr>
-                <td>Hepatitis Vaccine: <input type="text" name="im_hepatitis"></td>
-                <td>FLU Vaccine: <input type="text" name="im_flu"></td>
-                <td>IPV/OPV: <input type="text" name="im_ipv"></td>
-                <td>Others: <input type="text" name="im_others"></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Personal Social History</td>
-            </tr>
-            <tr>
-                <td>Alcohol Drinker: <input type="text" name="psh_alcohol"></td>
-                <td>Type of Alcohol: <input type="text" name="psh_alcohol_type"></td>
-                <td>Frequency: <input type="text" name="psh_alcohol_freq"></td>
-                <td>Habit Drug User: <input type="text" name="psh_drug"></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Maternal and Maternal History (for Females Only)</td>
-            </tr>
-            <tr>
-                <td>No. of Pregnancy: <input type="text" name="mat_pregnancy"></td>
-                <td>LMP: <input type="text" name="mat_lmp"></td>
-                <td>No. of Abortion: <input type="text" name="mat_abortion"></td>
-                <td>Menarche: <input type="text" name="mat_menarche"></td>
-            </tr>
-            <tr>
-                <td colspan="2">Gyne Pathology: <input type="text" name="mat_pathology"></td>
-                <td colspan="2">Amount: <input type="text" name="mat_amount"></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Dental History</td>
-            </tr>
-            <tr>
-                <td>Last Dental Visit: <input type="text" name="dental_last_visit"></td>
-                <td colspan="3">Procedure Done: <input type="text" name="dental_procedure"></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Physical Examination (to be filled up by Health Provider)</td>
-            </tr>
-            <tr>
-                <td>Height: <input type="text" name="pe_height"></td>
-                <td>Weight: <input type="text" name="pe_weight"></td>
-                <td>BP: <input type="text" name="pe_bp"></td>
-                <td>Pulse Rate: <input type="text" name="pe_pulse"></td>
-            </tr>
-            <tr>
-                <td>Respiratory Rate: <input type="text" name="pe_rr"></td>
-                <td>Temperature: <input type="text" name="pe_temp"></td>
-                <td colspan="2">Others: <input type="text" name="pe_others"></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Diagnosis</td>
-            </tr>
-            <tr>
-                <td colspan="4"><textarea name="diagnosis" rows="2"></textarea></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Hospitalization / Surgery (if any)</td>
-            </tr>
-            <tr>
-                <td colspan="4"><textarea name="hospitalization" rows="2"></textarea></td>
-            </tr>
-        </table>
-        <table>
-            <tr>
-                <td class="section-header" colspan="4">Declaration & Data Privacy Consent</td>
-            </tr>
-            <tr>
-                <td colspan="4">
-                    I hereby declare that the information above is correct to the best of my knowledge and I consent to the collection and processing of my personal and medical information in accordance with RA 10173 - Data Privacy Act of 2012.<br><br>
-                    Signature of Healthcare Provider: <span class="signature-line"></span><br>
-                    Date: <input type="date" name="sign_date">
-                </td>
-            </tr>
-        </table>
-        <br>
-        <input type="submit" value="Submit Form">
-    </form>
-    <button type="button" onclick="window.history.back();">Back</button>
-</body>
+
+
+
+
+    <?php include "footer.php"?>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    const consentCheckbox = document.getElementById('consentCheckbox');
+    const submitButton = document.querySelector('form button[type="submit"]');
+
+    consentCheckbox.addEventListener('change', () => {
+        submitButton.disabled = !consentCheckbox.checked;
+    });
+
+    // Initialize submit button as disabled
+    submitButton.disabled = true;
+    </script>
+    <script src="assets/js/employee_medical.js"></script>
+    <script>
+        let employee_id = sessionStorage.getItem("employee_id");
+        console.log("Employee ID from sessionStorage:", employee_id);
+
+        
+    </script>
+   
+
+  </body>
 </html>

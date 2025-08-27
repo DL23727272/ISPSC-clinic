@@ -1,38 +1,70 @@
 <?php
+session_start();
 require_once 'db_connection.php';
 
-// Handle search and campus filter
+// Handle search, campus, and type filter
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $campus = isset($_GET['campus']) ? $_GET['campus'] : '';
+$type   = isset($_GET['type']) ? $_GET['type'] : 'student'; // default student
+$role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
+// Check if logged-in user is admin and restrict campus
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+    // Assume you store admin campus in session
+    $adminCampus = $_SESSION['campus'];  
+}
 
-// Build SQL query with optional search and campus filter
-$sql = "SELECT shi.id, shi.student_id, shi.created_at, s.first_name, s.last_name, s.campus
-        FROM student_health_info shi
-        LEFT JOIN students s ON shi.student_id = s.student_id
-        WHERE 1";
+// Build base query
+if ($type === 'employee') {
+    $sql = "SELECT ehi.id, ehi.employee_id AS person_id, ehi.created_at, e.first_name, e.last_name, e.campus
+            FROM employee_health_info ehi
+            LEFT JOIN employees e ON ehi.employee_id = e.employee_id
+            WHERE 1";
+} else {
+    $sql = "SELECT shi.id, shi.student_id AS person_id, shi.created_at, s.first_name, s.last_name, s.campus
+            FROM student_health_info shi
+            LEFT JOIN students s ON shi.student_id = s.student_id
+            WHERE 1";
+}
 
+// Apply search
 if(!empty($search)) {
     $search = $conn->real_escape_string($search);
-    $sql .= " AND (s.student_id LIKE '%$search%' OR s.first_name LIKE '%$search%' OR s.last_name LIKE '%$search%')";
+    $sql .= " AND (person_id LIKE '%$search%' OR first_name LIKE '%$search%' OR last_name LIKE '%$search%')";
 }
 
-if(!empty($campus)) {
+// Restrict campus for admin
+if (isset($adminCampus)) {
+    $sql .= " AND campus = '".$conn->real_escape_string($adminCampus)."'";
+} elseif(!empty($campus)) {
+    // If not admin, use campus filter from dropdown
     $campus = $conn->real_escape_string($campus);
-    $sql .= " AND s.campus = '$campus'";
+    $sql .= " AND campus = '$campus'";
 }
 
-$sql .= " ORDER BY s.campus ASC, shi.id DESC";
-
+$sql .= " ORDER BY campus ASC, id DESC";
 $result = $conn->query($sql);
 
-// Fetch distinct campuses for the dropdown
-$campus_result = $conn->query("SELECT DISTINCT campus FROM students ORDER BY campus ASC");
+// Fetch campuses depending on type (but limit if admin)
+if ($type === 'employee') {
+    if (isset($adminCampus)) {
+        $campus_result = $conn->query("SELECT DISTINCT campus FROM employees WHERE campus = '".$conn->real_escape_string($adminCampus)."' ORDER BY campus ASC");
+    } else {
+        $campus_result = $conn->query("SELECT DISTINCT campus FROM employees ORDER BY campus ASC");
+    }
+} else {
+    if (isset($adminCampus)) {
+        $campus_result = $conn->query("SELECT DISTINCT campus FROM students WHERE campus = '".$conn->real_escape_string($adminCampus)."' ORDER BY campus ASC");
+    } else {
+        $campus_result = $conn->query("SELECT DISTINCT campus FROM students ORDER BY campus ASC");
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard | ISPSC CLINICA</title>
+    <title>Health Records</title>
         <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -133,11 +165,23 @@ $campus_result = $conn->query("SELECT DISTINCT campus FROM students ORDER BY cam
 <div class="dashboard-container">
     <header class="header">
         <div class="header-left">
-            <div class="logo"><i class="fas fa-chart-bar"></i><span>ISPSC CLINICA</span></div>
-            <span class="header-title">Admin Dashboard</span>
+            <div class="logo">
+                <i class="fas fa-chart-bar"></i>
+                <span>ISPSC CLINICA</span>
+            </div>
+            <span class="header-title">
+                 Admin Dashboard
+                <?php if (isset($_SESSION['campus'])): ?>
+                    - <?= htmlspecialchars($_SESSION['campus']); ?>
+                <?php endif; ?> Campus
+            </span>
         </div>
         <div class="header-right">
-            <button class="user-info" id="user-info-btn"><span>Admin User</span></button>
+            <button class="user-info" id="user-info-btn">
+                <span>
+                    <?= isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : "Admin User"; ?>
+                </span>
+            </button>
             <i class="fas fa-sign-out-alt logout-btn" id="logout-icon"></i>
         </div>
     </header>
@@ -165,61 +209,93 @@ $campus_result = $conn->query("SELECT DISTINCT campus FROM students ORDER BY cam
         </div>
     </nav>
 
-    <main class="main-content mt-5">
-    <div class="container mt-5">
-        <h2 class="mb-4">Student Health Information Records</h2>
+        <main class="main-content mt-5">
+            <div class="container mt-5">
+                <h2 class="mb-4">Student Health Information Records</h2>
 
-        <form class="row g-3 mb-3" method="get">
-            <div class="col-md-4">
-                <input type="text" name="search" class="form-control" placeholder="Search by ID or Name" value="<?= htmlspecialchars($search) ?>">
-            </div>
-            <div class="col-md-4">
-                <select name="campus" class="form-select">
-                    <option value="">All Campuses</option>
-                    <?php while($c = $campus_result->fetch_assoc()): ?>
-                        <option value="<?= htmlspecialchars($c['campus']) ?>" <?= $campus == $c['campus'] ? 'selected' : '' ?>><?= htmlspecialchars($c['campus']) ?></option>
-                    <?php endwhile; ?>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="health_records.php" class="btn btn-secondary">Reset</a>
-            </div>
-        </form>
+                <form class="row g-3 mb-3" method="get">
+                    <div class="col-md-3">
+                        <input type="text" name="search" class="form-control" 
+                            placeholder="Search by ID or Name" 
+                            value="<?= htmlspecialchars($search) ?>">
+                    </div>
 
-        <table class="table table-bordered table-striped">
-            <thead>
-                <tr>
-                    <th>Student ID</th>
-                    <th>Name</th>
-                    <th>Campus</th>
-                    <th>Date Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if($result->num_rows > 0): $i = 1; ?>
-                    <?php while($row = $result->fetch_assoc()): ?>
+                    <div class="col-md-3">
+                        <select name="type" class="form-select" onchange="this.form.submit()">
+                            <option value="student" <?= $type === 'student' ? 'selected' : '' ?>>Students</option>
+                            <option value="employee" <?= $type === 'employee' ? 'selected' : '' ?>>Employees</option>
+                        </select>
+                    </div>
+
+
+                    
+                    <div class="col-md-3">
+                        <?php if ($role === 'super_admin'): ?>
+                            <!-- Super Admin: Can select from all campuses -->
+                            <select name="campus" class="form-select" onchange="this.form.submit()">
+                                <option value="">All Campuses</option>
+                                <?php while($c = $campus_result->fetch_assoc()): ?>
+                                    <option value="<?= htmlspecialchars($c['campus']) ?>" 
+                                            <?= $campus == $c['campus'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($c['campus']) ?>
+                                    </option>
+                                <?php endwhile; ?>
+                            </select>
+                        <?php else: ?>
+                            <!-- Campus Admin: Show their campus (disabled) -->
+                            <select class="form-select" disabled>
+                                <option selected><?= htmlspecialchars($adminCampus) ?></option>
+                            </select>
+                            <!-- Pass their campus as hidden field so it's still submitted -->
+                            <input type="hidden" name="campus" value="<?= htmlspecialchars($adminCampus) ?>">
+                        <?php endif; ?>
+                    </div>
+
+
+
+
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                        <a href="health_records.php" class="btn btn-secondary">Reset</a>
+                    </div>
+                </form>
+
+
+                <table class="table table-bordered table-striped">
+                <thead>
                         <tr>
-                            <td><?= htmlspecialchars($row['student_id']) ?></td>
-                            <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
-                            <td><?= htmlspecialchars($row['campus']) ?></td>
-                            <td><?= htmlspecialchars($row['created_at']) ?></td>
-                            <td>
-                                <a href="edit_health_info.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-primary">Edit</a>
-                                <a href="delete_health.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
-                            </td>
+                            <th><?= $type === 'employee' ? 'Employee ID' : 'Student ID' ?></th>
+                            <th>Name</th>
+                            <th>Campus</th>
+                            <th>Date Created</th>
+                            <th>Actions</th>
                         </tr>
-                    <?php endwhile; ?>
-                <?php else: ?>
-                    <tr>
-                        <td colspan="6" class="text-center">No records found.</td>
-                    </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-    </main>
+                    </thead>
+                    <tbody>
+                        <?php if($result->num_rows > 0): ?>
+                            <?php while($row = $result->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['person_id']) ?></td>
+                                    <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name']) ?></td>
+                                    <td><?= htmlspecialchars($row['campus']) ?></td>
+                                    <td><?= htmlspecialchars($row['created_at']) ?></td>
+                                    <td>
+                                        <a href="edit_health_info.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-primary">Edit</a>
+                                        <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" 
+                                        class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Delete this record?')">Delete</a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr><td colspan="5" class="text-center">No records found.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+
+                </table>
+            </div>
+        </main>
+
 </div>
 
 <script>

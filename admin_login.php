@@ -1,38 +1,4 @@
-<?php
-session_start();
-require_once 'db_connection.php';
 
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = sanitize_input($_POST['admin-username']);
-    $password = sanitize_input($_POST['admin-password']);
-    
-    // Check admin credentials
-    $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? AND role = 'admin'");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 1) {
-        $admin = $result->fetch_assoc();
-        
-        if (verify_password($password, $admin['password_hash'])) {
-            $_SESSION['user_id'] = $admin['id'];
-            $_SESSION['username'] = $admin['username'];
-            $_SESSION['role'] = $admin['role'];
-            $_SESSION['logged_in'] = true;
-            
-            header('Location: dashboard.php');
-            exit();
-        } else {
-            $error = 'Invalid password. Please try again.';
-        }
-    } else {
-        $error = 'Admin username not found.';
-    }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -42,6 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="img/logo.ico" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -262,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="portal-subtitle">Secure access to clinic management</p>
         
         <div class="form-container">
-            <form id="admin-login-form">
+           <form id="loginForm"  method="POST">
                 <div class="error-message" id="error-message" role="alert" aria-live="polite">
                     <i class="fas fa-exclamation-triangle"></i>
                     Invalid credentials. Please check your username and password.
@@ -310,65 +278,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        // Form validation and submission handler
-        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+
+
+        document.getElementById("loginForm").addEventListener("submit", async function(e) {
             e.preventDefault();
-            
-            const username = document.getElementById('admin-username').value.trim();
-            const password = document.getElementById('admin-password').value;
-            const errorMessage = document.getElementById('error-message');
-            const usernameInput = document.getElementById('admin-username');
-            const passwordInput = document.getElementById('admin-password');
-            const loginButton = document.getElementById('login-button');
-            
-            // Clear previous error states
-            errorMessage.classList.remove('show');
-            usernameInput.classList.remove('error');
-            passwordInput.classList.remove('error');
-            
-            // Validate credentials
-            if (username === 'admin' && password === 'ispscclinica') {
-                // Success - redirect to dashboard
-                loginButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
-                loginButton.disabled = true;
-                
-                setTimeout(() => {
-                    window.location.href = 'dashboard.php';
-                }, 1000);
+
+            const formData = new FormData(this);
+
+            const response = await fetch("admin_process.php", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Save in sessionStorage
+                sessionStorage.setItem("employee_id", result.employee_id);
+                sessionStorage.setItem("role", result.role);
+                sessionStorage.setItem("campus", result.campus);
+
+                // Redirect
+                window.location.href = "dashboard.php";
             } else {
-                // Show error message and highlight inputs
-                errorMessage.classList.add('show');
-                usernameInput.classList.add('error');
-                passwordInput.classList.add('error');
-                
-                // Focus on username field for accessibility
-                usernameInput.focus();
-                
-                // Clear error state after 5 seconds
-                setTimeout(() => {
-                    errorMessage.classList.remove('show');
-                    usernameInput.classList.remove('error');
-                    passwordInput.classList.remove('error');
-                }, 5000);
-            }
-        });
-
-        // Clear error states when user starts typing
-        document.getElementById('admin-username').addEventListener('input', function() {
-            const errorMessage = document.getElementById('error-message');
-            if (errorMessage.classList.contains('show')) {
-                errorMessage.classList.remove('show');
-                this.classList.remove('error');
-                document.getElementById('admin-password').classList.remove('error');
-            }
-        });
-
-        document.getElementById('admin-password').addEventListener('input', function() {
-            const errorMessage = document.getElementById('error-message');
-            if (errorMessage.classList.contains('show')) {
-                errorMessage.classList.remove('show');
-                this.classList.remove('error');
-                document.getElementById('admin-username').classList.remove('error');
+               Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: result.message
+                });
             }
         });
 

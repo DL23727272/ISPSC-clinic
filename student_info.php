@@ -42,13 +42,13 @@ $year_options = [1,2,3,4,5];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISPSC CLINICA | Medical Records Management</title>
+    <title>Student Info</title>
 
 
 
 
 
-    <link
+   <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
@@ -70,7 +70,7 @@ $year_options = [1,2,3,4,5];
     https://cdn.jsdelivr.net/npm/sweetalert2@11.22.4/dist/sweetalert2.min.css
     " rel="stylesheet">
     <link href="styles.css" rel="stylesheet" />
-
+    <link rel="icon" type="image/x-icon" href="img/logo.ico" />
 
 
 
@@ -115,56 +115,49 @@ $year_options = [1,2,3,4,5];
       </div>
     </header>
 
-    <nav class="navbar navbar-expand-lg">
+   <nav class="navbar navbar-expand-lg sticky-top">
       <div class="container">
         <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <i class="navbar-toggler-icon" id="menu"></i>
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <i class="navbar-toggler-icon" id="menu"></i>
         </button>
-        </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
+          <!-- Left side -->
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a
-                class="nav-link"
-                aria-current="page"
-                href="student_medical.php"
-                >Home</a
-              >
+              <a class="nav-link" aria-current="page" href="employee_medical.php">Home</a>
             </li>
             <li class="nav-item">
-              <a  class="nav-link "
-                aria-current="page" href="student_edit.php">Edit Health Info</a>
+              <a class="nav-link" href="student_edit.php">Edit Health Info</a>
             </li>
             <li class="nav-item">
-              <a  class="nav-link  active"
-                style="color: yellow"
-                aria-current="page" href="student_info.php">Edit Personal Info</a>
+              <a class="nav-link active" style="color: yellow" href="student_info.php">Edit Personal Info</a>
             </li>
-             <li class="nav-item">
-              <a
-                class="nav-link"
-                href="index.php"
-                ><i class="fa-solid fa-power-off"></i> Logout</a
-              >
-            </li>
-          
           </ul>
-          
+
+          <!-- Right side (Logout) -->
+          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+              <a class="nav-link" href="index.php">
+                <i class="fa-solid fa-power-off"></i> Logout
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
   
 
 
-    <div class="container">
+    <div class="container mt-5">
         <div class="row justify-content-center">
         <div class="col-lg-10 col-xl-9"> 
               <h2 class="mb-4 text-center fw-bold">Edit your Health Information Form</h2>
@@ -185,7 +178,7 @@ $year_options = [1,2,3,4,5];
                 <div class="row mb-3">
                     <div class="col-md-4">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="register_student_id" value="<?php echo htmlspecialchars($student['student_id']); ?>" required>
+                    <input type="text" class="form-control" name="register_student_id" value="<?php echo htmlspecialchars($student['student_id']); ?>" disabled>
                     </div>
                     <div class="col-md-4">
                     <label>Campus</label>
@@ -352,6 +345,8 @@ $year_options = [1,2,3,4,5];
     
     
     <?php include "footer.php"?>
+    <!-- Make sure this is included at the bottom -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
     // Toggle admin card and other cards on icon click
     document.getElementById('show-admin-btn').onclick = function() {
