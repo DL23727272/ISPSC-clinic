@@ -28,9 +28,33 @@ $result = $conn->query($sql);
 if(!$result){
     die("Query error: " . $conn->error);
 }
-if($result->num_rows == 0) {
-    die("Record not found for employee_id: " . htmlspecialchars($employee_id));
+if ($result->num_rows === 0) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>No Record Found</title>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <body>
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Record Found',
+                text: 'There is no health record yet for employee ID: <?= htmlspecialchars($employee_id) ?>',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'employee_medical.php';
+            });
+        </script>
+    </body>
+    </html>
+    <?php
+    exit;
 }
+
+
 
 $record = $result->fetch_assoc();
 
@@ -663,6 +687,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/user_auth.js"></script>
     <script>
     const consentCheckbox = document.getElementById('consentCheckbox');
     const submitButton = document.querySelector('form button[type="submit"]');

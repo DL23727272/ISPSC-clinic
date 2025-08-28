@@ -582,6 +582,7 @@
     submitButton.disabled = true;
     </script>
     <script src="assets/js/employee_medical.js"></script>
+    <script src="assets/js/user_auth.js"></script>
     <script>
         let employee_id = sessionStorage.getItem("employee_id");
         console.log("Employee ID from sessionStorage:", employee_id);

@@ -1,7 +1,11 @@
 <?php
 session_start();
 require_once 'db_connection.php';
-
+// Make sure user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: admin_login.php");
+    exit;
+}
 // Handle search, campus, and type filter
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $campus = isset($_GET['campus']) ? $_GET['campus'] : '';
