@@ -2,7 +2,8 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php'; // path to PHPMailer
+require __DIR__ . '/vendor/autoload.php';
+
 
 function sendRegistrationEmail($toEmail, $password, $loginLink) {
     $mail = new PHPMailer(true);
