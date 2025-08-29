@@ -21,6 +21,9 @@ $employeeCount = $conn->query("SELECT COUNT(*) as total FROM employees $campusCo
 $diseases = ['hypertension','diabetes','asthma','cancer','tuberculosis','heart_disease'];
 
 $diseaseStats = [];
+$studentStats = [];
+$employeeStats = [];
+
 foreach ($diseases as $d) {
     $studentQ = $conn->query("SELECT COUNT(*) as c FROM student_health_info 
                               INNER JOIN students s ON s.student_id=student_health_info.student_id 
@@ -28,21 +31,57 @@ foreach ($diseases as $d) {
     $employeeQ = $conn->query("SELECT COUNT(*) as c FROM employee_health_info 
                                INNER JOIN employees e ON e.employee_id=employee_health_info.employee_id 
                                WHERE $d=1 " . ($campusCondition ? "AND e.campus='".$conn->real_escape_string($userCampus)."'" : ""));
-    $diseaseStats[$d] = $studentQ->fetch_assoc()['c'] + $employeeQ->fetch_assoc()['c'];
+    
+    $studentStats[$d] = $studentQ->fetch_assoc()['c'];
+    $employeeStats[$d] = $employeeQ->fetch_assoc()['c'];
 }
 
-// --- Vaccination coverage (COVID 1st dose as example) ---
-$covidVaccinated = $conn->query("
+
+// --- Total Health Inputs (students + employees) ---
+$totalHealthInputs = $conn->query("
     SELECT (
         (SELECT COUNT(*) FROM student_health_info sh
          INNER JOIN students s ON s.student_id=sh.student_id
-         WHERE sh.covid_1st_dose IS NOT NULL " . ($campusCondition ? "AND s.campus='".$conn->real_escape_string($userCampus)."'" : "") . ")
+         " . ($campusCondition ? "WHERE s.campus='".$conn->real_escape_string($userCampus)."'" : "") . ")
         +
         (SELECT COUNT(*) FROM employee_health_info eh
          INNER JOIN employees e ON e.employee_id=eh.employee_id
-         WHERE eh.covid_1st_dose IS NOT NULL " . ($campusCondition ? "AND e.campus='".$conn->real_escape_string($userCampus)."'" : "") . ")
+         " . ($campusCondition ? "WHERE e.campus='".$conn->real_escape_string($userCampus)."'" : "") . ")
     ) as total
 ")->fetch_assoc()['total'];
+
+// --- Per Campus Counts (Students + Employees) ---
+$campuses = ['MAIN CAMPUS','SANTA MARIA','NARVACAN','SANTIAGO','TAGUDIN','CANDON','CERVANTES'];
+
+// Students
+$studentsByCampus = [];
+$result = $conn->query("
+    SELECT campus, sex, COUNT(*) as total 
+    FROM students
+    GROUP BY campus, sex
+");
+while ($row = $result->fetch_assoc()) {
+    $campus = strtoupper($row['campus']);
+    $gender = strtolower($row['sex']);
+    $studentsByCampus[$campus][$gender] = $row['total'];
+    $studentsByCampus[$campus]['total'] = 
+        ($studentsByCampus[$campus]['total'] ?? 0) + $row['total'];
+}
+
+// Employees
+$employeesByCampus = [];
+$result = $conn->query("
+    SELECT campus, sex, COUNT(*) as total 
+    FROM employees
+    GROUP BY campus, sex
+");
+while ($row = $result->fetch_assoc()) {
+    $campus = strtoupper($row['campus']);
+    $gender = strtolower($row['sex']);
+    $employeesByCampus[$campus][$gender] = $row['total'];
+    $employeesByCampus[$campus]['total'] = 
+        ($employeesByCampus[$campus]['total'] ?? 0) + $row['total'];
+}
 
 ?>
 
@@ -51,7 +90,7 @@ $covidVaccinated = $conn->query("
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+    <title>Reports Dashboard</title>
         <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -156,12 +195,12 @@ $covidVaccinated = $conn->query("
             <a href="health_records.php" class="menu-item <?= ($currentPage == 'health_records.php') ? 'active' : '' ?>">
                 <i class="fas fa-clipboard-list"></i><span>Health Informations</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
+            <a href="reports.php" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
                 <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'settings.php') ? 'active' : '' ?>">
+            <!-- <a href="#" class="menu-item <?= ($currentPage == 'settings.php') ? 'active' : '' ?>">
                 <i class="fas fa-cog"></i><span>Settings</span>
-            </a>
+            </a> -->
         </div>
     </nav>
 
@@ -176,6 +215,13 @@ $covidVaccinated = $conn->query("
                 <div class="row text-center mt-4">
                     <div class="col-md-3">
                         <div class="card shadow p-3">
+                          <h5>Total Health Inputs</h5>
+                          <h2><?= $totalHealthInputs ?></h2>
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card shadow p-3">
                             <h5>Students</h5>
                             <h2><?= $studentCount ?></h2>
                         </div>
@@ -186,16 +232,189 @@ $covidVaccinated = $conn->query("
                             <h2><?= $employeeCount ?></h2>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card shadow p-3">
-                            <h5>COVID Vaccinated</h5>
-                            <h2><?= $covidVaccinated ?></h2>
-                        </div>
-                    </div>
+                   
                 </div>
 
                 <!-- Disease Prevalence Chart -->
                 <canvas id="diseaseChart" height="120"></canvas>
+            </div>
+
+
+
+             <div class="container">
+
+
+
+
+                <!-- Students Row -->
+                <h3 class="mb-3">Students</h3>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon blue"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Main Campus</h4>
+                                <p>Total: <?= $studentsByCampus['MAIN CAMPUS']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['MAIN CAMPUS']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['MAIN CAMPUS']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Santa Maria</h4>
+                                <p>Total: <?= $studentsByCampus['SANTA MARIA']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['SANTA MARIA']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['SANTA MARIA']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Narvacan</h4>
+                                <p>Total: <?= $studentsByCampus['NARVACAN']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['NARVACAN']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['NARVACAN']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon red"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Santiago</h4>
+                                <p>Total: <?= $studentsByCampus['SANTIAGO']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['SANTIAGO']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['SANTIAGO']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon purple"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Tagudin</h4>
+                                <p>Total: <?= $studentsByCampus['TAGUDIN']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['TAGUDIN']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['TAGUDIN']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Candon</h4>
+                                <p>Total: <?= $studentsByCampus['CANDON']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['CANDON']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['CANDON']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-users"></i></div>
+                            <div class="card-content">
+                                <h4>Cervantes</h4>
+                                <p>Total: <?= $studentsByCampus['CERVANTES']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $studentsByCampus['CERVANTES']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $studentsByCampus['CERVANTES']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employees Row -->
+                <h3 class="mb-3 mt-5">Employees</h3>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon blue"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Main Campus</h4>
+                                <p>Total: <?= $employeesByCampus['MAIN CAMPUS']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['MAIN CAMPUS']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['MAIN CAMPUS']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Santa Maria</h4>
+                                <p>Total: <?= $employeesByCampus['SANTA MARIA']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['SANTA MARIA']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['SANTA MARIA']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Narvacan</h4>
+                                 <p>Total: <?= $employeesByCampus['NARVACAN']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['NARVACAN']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['NARVACAN']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon red"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Santiago</h4>
+                                <p>Total: <?= $employeesByCampus['SANTIAGO']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['SANTIAGO']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['SANTIAGO']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon purple"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Tagudin</h4>
+                                <p>Total: <?= $employeesByCampus['TAGUDIN']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['TAGUDIN']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['TAGUDIN']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Candon</h4>
+                                <p>Total: <?= $employeesByCampus['CANDON']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['CANDON']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['CANDON']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="info-card">
+                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                            <div class="card-content">
+                                <h4>Cervantes</h4>
+                                <p>Total: <?= $employeesByCampus['CERVANTES']['total'] ?? 0 ?></p>
+                                <p>Male: <?= $employeesByCampus['CERVANTES']['male'] ?? 0 ?></p>
+                                <p>Female: <?= $employeesByCampus['CERVANTES']['female'] ?? 0 ?></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
 
@@ -210,16 +429,45 @@ $covidVaccinated = $conn->query("
 <script>
     const ctx = document.getElementById('diseaseChart');
     new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: {
-            labels: <?= json_encode(array_keys($diseaseStats)) ?>,
-            datasets: [{
-                label: 'Number of Cases',
-                data: <?= json_encode(array_values($diseaseStats)) ?>,
-                backgroundColor: 'rgba(54, 162, 235, 0.7)'
-            }]
+            labels: <?= json_encode(array_keys($studentStats)) ?>,
+            datasets: [
+                {
+                    label: 'Students',
+                    data: <?= json_encode(array_values($studentStats)) ?>,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    tension: 0.3,
+                    fill: false,
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    pointRadius: 5
+                },
+                {
+                    label: 'Employees',
+                    data: <?= json_encode(array_values($employeeStats)) ?>,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.3,
+                    fill: false,
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)',
+                    pointRadius: 5
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Disease Prevalence (Students vs Employees)' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
     });
+
+
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();

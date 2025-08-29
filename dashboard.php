@@ -254,12 +254,12 @@ if ($role === 'superadmin') {
             <a href="health_records.php" class="menu-item <?= ($currentPage == 'health_records.php') ? 'active' : '' ?>">
                 <i class="fas fa-clipboard-list"></i><span>Health Informations</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
+            <a href="reports.php" class="menu-item <?= ($currentPage == 'reports.php') ? 'active' : '' ?>">
                 <i class="fas fa-chart-line"></i><span>Reports & Analytics</span>
             </a>
-            <a href="#" class="menu-item <?= ($currentPage == 'settings.php') ? 'active' : '' ?>">
+            <!-- <a href="#" class="menu-item <?= ($currentPage == 'settings.php') ? 'active' : '' ?>">
                 <i class="fas fa-cog"></i><span>Settings</span>
-            </a>
+            </a> -->
         </div>
     </nav>
 
