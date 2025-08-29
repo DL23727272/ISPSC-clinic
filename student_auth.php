@@ -127,19 +127,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 
 
-                if ($stmt->execute()) {
-
-                      // Get values
+               if ($stmt->execute()) {
+                    // Get values
                     $email = $_POST['register_email'];
                     $password = $_POST['register_password'];
                     $loginLink = "https://ispsc-clinica.personatab.com/"; 
 
-                    sendRegistrationEmail($email, $password, $loginLink);
+                    // Try sending email
+                    $mailResult = sendRegistrationEmail($email, $password, $loginLink);
 
-                    $response = ['status' => 'success', 'message' => 'Registration successful! Please check your email & login.'];
+                    if ($mailResult === true) {
+                        $response = [
+                            'status'  => 'success',
+                            'message' => 'Registration successful! Please check your email & login.'
+                        ];
+                    } else {
+                        // Registration worked, but email failed
+                        $response = [
+                            'status'  => 'warning',
+                            'message' => 'Registration successful, but email could not be sent: ' . $mailResult
+                        ];
+                    }
                 } else {
                     $response = ['status' => 'error', 'message' => 'Registration failed. Please try again.'];
                 }
+
             }
         }
         $stmt->close();

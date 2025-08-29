@@ -1,8 +1,10 @@
 <?php
+require __DIR__ . '/PHPMailer/src/Exception.php';
+require __DIR__ . '/PHPMailer/src/PHPMailer.php';
+require __DIR__ . '/PHPMailer/src/SMTP.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-
-require __DIR__ . '/vendor/autoload.php';
 
 
 function sendRegistrationEmail($toEmail, $password, $loginLink) {
@@ -50,6 +52,7 @@ function sendRegistrationEmail($toEmail, $password, $loginLink) {
         $mail->send();
         return true;
     } catch (Exception $e) {
-        return "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        return "Mailer Error: " . $mail->ErrorInfo;
     }
+
 }

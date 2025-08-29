@@ -264,9 +264,10 @@
                 </div>
               </div>
 
-              <button type="submit" class="btn btn-primary w-100">
+              <button type="submit" class="btn btn-primary w-100" id="registerBtn">
                 <i class="fas fa-user-plus"></i> Register
               </button>
+
 
             </form>
           </div>
