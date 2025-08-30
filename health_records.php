@@ -288,11 +288,11 @@ if ($type === 'employee') {
                                         <?php if($type === 'student'): ?>
                                             <a href="pdf.php?student_id=<?= $row['person_id'] ?>&type=<?= $type ?>" target="_blank" class="btn btn-sm btn-success">Print</a>
                                             <a href="edit_health_info.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-primary">Edit</a>
-                                            <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
+                                            <!-- <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a> -->
                                         <?php elseif($type === 'employee'): ?>
                                             <a href="pdf.php?id=<?= $row['id'] ?>&type=<?= $type ?>" target="_blank" class="btn btn-sm btn-success">Print</a>
                                             <a href="edit_employee_health_info.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-primary">Edit</a>
-                                            <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a>
+                                            <!-- <a href="delete_health.php?id=<?= $row['id'] ?>&type=<?= $type ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this record?')">Delete</a> -->
                                         <?php endif; ?>
                                     </td>
 

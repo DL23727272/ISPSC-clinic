@@ -212,208 +212,195 @@ while ($row = $result->fetch_assoc()) {
            <div class="container mt-4">
                 <h2>Reports & Analytics <?= ($role !== 'super_admin') ? "- ".htmlspecialchars($userCampus) : ""; ?></h2>
 
-                <div class="row text-center mt-4">
-                    <div class="col-md-3">
-                        <div class="card shadow p-3">
-                          <h5>Total Health Inputs</h5>
-                          <h2><?= $totalHealthInputs ?></h2>
+                 <div class="info-cards">
 
+                    <!-- Total Health Info -->
+                    <div class="info-card">
+                        <div class="card-icon yellow"><i class="fas fa-file-alt"></i></div>
+                        <div class="card-content">
+                        <h5>Total Health Inputs</h5>
+                            <h2><?= $totalHealthInputs ?></h2>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card shadow p-3">
-                            <h5>Students</h5>
+                    <div class="info-card">
+                        <div class="card-icon blue"><i class="fas fa-users"></i></div>
+                        <div class="card-content">
+                        <h5>Students</h5>
                             <h2><?= $studentCount ?></h2>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="card shadow p-3">
+                    <div class="info-card">
+                        <div class="card-icon purple"><i class="fas fa-users"></i></div>
+                        <div class="card-content">
                             <h5>Employees</h5>
-                            <h2><?= $employeeCount ?></h2>
+                                <h2><?= $employeeCount ?></h2>
                         </div>
                     </div>
-                   
-                </div>
+                 </div>
+                  
+                 <hr class="mt-5">
+                
+
+                
 
                 <!-- Disease Prevalence Chart -->
                 <canvas id="diseaseChart" height="120"></canvas>
             </div>
 
 
-
+            <hr class="mt-5">
              <div class="container">
-
-
-
 
                 <!-- Students Row -->
                 <h3 class="mb-3">Students</h3>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon blue"><i class="fas fa-users"></i></div>
-                            <div class="card-content">
-                                <h4>Main Campus</h4>
+                    <div class="info-cards">
+                            <div class="info-card">
+                                <div class="card-icon red"><i class="fas fa-users"></i></div>
+                                <div class="card-content">
+                            <h4>Main Campus</h4>
                                 <p>Total: <?= $studentsByCampus['MAIN CAMPUS']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['MAIN CAMPUS']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['MAIN CAMPUS']['female'] ?? 0 ?></p>
+                                <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['MAIN CAMPUS']['male'] ?? 0 ?></p>
+                                <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['MAIN CAMPUS']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-users"></i></div>
-                            <div class="card-content">
+                            <div class="info-card">
+                                <div class="card-icon yellow"><i class="fas fa-users"></i></div>
+                                <div class="card-content">
                                 <h4>Santa Maria</h4>
-                                <p>Total: <?= $studentsByCampus['SANTA MARIA']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['SANTA MARIA']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['SANTA MARIA']['female'] ?? 0 ?></p>
+                                        <p>Total: <?= $studentsByCampus['SANTA MARIA']['total'] ?? 0 ?></p>
+                                        <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['SANTA MARIA']['male'] ?? 0 ?></p>
+                                        <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['SANTA MARIA']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="info-card">
+                                <div class="card-icon blue"><i class="fas fa-users"></i></div>
+                                <div class="card-content">
+                                <h4>Narvacan</h4>
+                                        <p>Total: <?= $studentsByCampus['NARVACAN']['total'] ?? 0 ?></p>
+                                        <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['NARVACAN']['male'] ?? 0 ?></p>
+                                        <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['NARVACAN']['female'] ?? 0 ?></p>
+                                </div>
+                            </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <div class="info-cards mt-3">
                         <div class="info-card">
                             <div class="card-icon green"><i class="fas fa-users"></i></div>
                             <div class="card-content">
-                                <h4>Narvacan</h4>
-                                <p>Total: <?= $studentsByCampus['NARVACAN']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['NARVACAN']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['NARVACAN']['female'] ?? 0 ?></p>
+                        <h4>Santiago</h4>
+                                    <p>Total: <?= $studentsByCampus['SANTIAGO']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['SANTIAGO']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['SANTIAGO']['female'] ?? 0 ?></p>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
                         <div class="info-card">
                             <div class="card-icon red"><i class="fas fa-users"></i></div>
                             <div class="card-content">
-                                <h4>Santiago</h4>
-                                <p>Total: <?= $studentsByCampus['SANTIAGO']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['SANTIAGO']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['SANTIAGO']['female'] ?? 0 ?></p>
+                            <h4>Tagudin</h4>
+                                    <p>Total: <?= $studentsByCampus['TAGUDIN']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['TAGUDIN']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['TAGUDIN']['female'] ?? 0 ?></p>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4 mb-3">
+
                         <div class="info-card">
                             <div class="card-icon purple"><i class="fas fa-users"></i></div>
                             <div class="card-content">
-                                <h4>Tagudin</h4>
-                                <p>Total: <?= $studentsByCampus['TAGUDIN']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['TAGUDIN']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['TAGUDIN']['female'] ?? 0 ?></p>
+                            <h4>Candon</h4>
+                                    <p>Total: <?= $studentsByCampus['CANDON']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['CANDON']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['CANDON']['female'] ?? 0 ?></p>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
                         <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-users"></i></div>
+                            <div class="card-icon yellow"><i class="fas fa-users"></i></div>
                             <div class="card-content">
-                                <h4>Candon</h4>
-                                <p>Total: <?= $studentsByCampus['CANDON']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['CANDON']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['CANDON']['female'] ?? 0 ?></p>
+                            <h4>Cervantes</h4>
+                                    <p>Total: <?= $studentsByCampus['CERVANTES']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $studentsByCampus['CERVANTES']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $studentsByCampus['CERVANTES']['female'] ?? 0 ?></p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-users"></i></div>
-                            <div class="card-content">
-                                <h4>Cervantes</h4>
-                                <p>Total: <?= $studentsByCampus['CERVANTES']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $studentsByCampus['CERVANTES']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $studentsByCampus['CERVANTES']['female'] ?? 0 ?></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+
+                    <hr class="mt-5">
+                   
 
                 <!-- Employees Row -->
                 <h3 class="mb-3 mt-5">Employees</h3>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon blue"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
+                    <div class="info-cards">
+                            <div class="info-card">
+                                <div class="card-icon blue"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
                                 <h4>Main Campus</h4>
-                                <p>Total: <?= $employeesByCampus['MAIN CAMPUS']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['MAIN CAMPUS']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['MAIN CAMPUS']['female'] ?? 0 ?></p>
+                                    <p>Total: <?= $employeesByCampus['MAIN CAMPUS']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['MAIN CAMPUS']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['MAIN CAMPUS']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
+                            <div class="info-card">
+                                <div class="card-icon blue"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
                                 <h4>Santa Maria</h4>
-                                <p>Total: <?= $employeesByCampus['SANTA MARIA']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['SANTA MARIA']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['SANTA MARIA']['female'] ?? 0 ?></p>
+                                    <p>Total: <?= $employeesByCampus['SANTA MARIA']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['SANTA MARIA']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['SANTA MARIA']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
-                                <h4>Narvacan</h4>
-                                 <p>Total: <?= $employeesByCampus['NARVACAN']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['NARVACAN']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['NARVACAN']['female'] ?? 0 ?></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon red"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
-                                <h4>Santiago</h4>
-                                <p>Total: <?= $employeesByCampus['SANTIAGO']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['SANTIAGO']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['SANTIAGO']['female'] ?? 0 ?></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                            
 
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon purple"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
+                            <div class="info-card">
+                                <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
+                                    <h4>Narvacan</h4>
+                                    <p>Total: <?= $employeesByCampus['NARVACAN']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['NARVACAN']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['NARVACAN']['female'] ?? 0 ?></p>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="info-cards mt-3">
+                            <div class="info-card">
+                                <div class="card-icon red"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
+                                    <h4>Santiago</h4>
+                                    <p>Total: <?= $employeesByCampus['SANTIAGO']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['SANTIAGO']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['SANTIAGO']['female'] ?? 0 ?></p>
+                                </div>
+                            </div>
+                            <div class="info-card">
+                                <div class="card-icon blue"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
                                 <h4>Tagudin</h4>
-                                <p>Total: <?= $employeesByCampus['TAGUDIN']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['TAGUDIN']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['TAGUDIN']['female'] ?? 0 ?></p>
+                                    <p>Total: <?= $employeesByCampus['TAGUDIN']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['TAGUDIN']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['TAGUDIN']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
+                            
+
+                            <div class="info-card">
+                                <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
                                 <h4>Candon</h4>
-                                <p>Total: <?= $employeesByCampus['CANDON']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['CANDON']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['CANDON']['female'] ?? 0 ?></p>
+                                    <p>Total: <?= $employeesByCampus['CANDON']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['CANDON']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['CANDON']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <div class="info-card">
-                            <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
-                            <div class="card-content">
-                                <h4>Cervantes</h4>
-                                <p>Total: <?= $employeesByCampus['CERVANTES']['total'] ?? 0 ?></p>
-                                <p>Male: <?= $employeesByCampus['CERVANTES']['male'] ?? 0 ?></p>
-                                <p>Female: <?= $employeesByCampus['CERVANTES']['female'] ?? 0 ?></p>
+                            <div class="info-card">
+                                <div class="card-icon green"><i class="fas fa-user-tie"></i></div>
+                                <div class="card-content">
+                                    <h4>Cervantes</h4>
+                                    <p>Total: <?= $employeesByCampus['CERVANTES']['total'] ?? 0 ?></p>
+                                    <p><i class="fas fa-male"></i> Male: <?= $employeesByCampus['CERVANTES']['male'] ?? 0 ?></p>
+                                    <p><i class="fas fa-female"></i> Female: <?= $employeesByCampus['CERVANTES']['female'] ?? 0 ?></p>
+                                </div>
                             </div>
-                        </div>
                     </div>
-                </div>
+
 
             </div>
 
