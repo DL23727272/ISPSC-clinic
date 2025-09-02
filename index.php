@@ -97,15 +97,15 @@
                     <i class="fas fa-user-graduate"></i>
                 </div>
                 <h3>Student Access</h3>
-                <p>Scan to Register or Log In for medical form</p>
-                <button id="scan-qr-btn" class="btn btn-primary m-2">
+                <p>Log In for medical form</p>
+                <!-- <button id="scan-qr-btn" class="btn btn-primary m-2">
                     <i class="fas fa-qrcode"></i> Scan QR Code
                 </button>
                 <div id="qr-scanner" class="qr-scanner hidden">
                     <div class="scanner-placeholder"></div>
                     <p class="scanner-instruction">Point your camera at your student QR code</p>
                     <button id="cancel-scan" class="btn btn-secondary">Cancel</button>
-                </div>
+                </div> -->
                 
                 <a href="student_login.php" class="btn btn-primary m">
                     <i class="fas fa-sign-in-alt"></i> Student Login

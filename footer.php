@@ -72,8 +72,8 @@
             <div class="col-md-4">
                 <h5>Contact Us</h5>
                 <p>
-                Brgy. San Nicolas, Candon City<br>Ilocos Sur, Philippines
-                <br>Email: dlvisuals@mis-main.personatab.com
+                Santa Maria,<br>Ilocos Sur, Philippines
+                <br>Email: jpsaldua24@gmail.com
                 </p>
             </div>
             <div class="col-md-4">
@@ -89,7 +89,7 @@
                 <ul class="list-unstyled">
                     <li><a href="#" class="text-decoration-none text-warning">Privacy Policy</a></li>
                     <li><a href="#" class="text-decoration-none text-warning">Terms of Use</a></li>
-                    <li><a href="https://maps.app.goo.gl/BbMDpzJFRiL83TUR6" class="text-decoration-none text-warning">Site Map</a></li>
+                    <li><a href="https://maps.app.goo.gl/yWgZqEHoQvnuhuB37" class="text-decoration-none text-warning">Site Map</a></li>
                 </ul>
             </div>
         </div>
@@ -100,7 +100,7 @@
 <div style="background: #4a0000; color: white; padding: 10px 0;">
 
     <p class="text-center mb-0">
-        &copy; <span id="year"></span> Developed by Dran Leynard Gamoso. All rights reserved.
+        &copy; <span id="year"></span> Developed by Johnpaul Saldua Baño. All rights reserved.
     </p>
 </div>
 
